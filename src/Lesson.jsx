@@ -99,22 +99,25 @@ const Lesson = ({ lesson, mode, onComplete, autoplay = false }) => {
         setQuizPassed(true);
         setHasWatched(true);
         setShowQuiz(false);
-        const currentUser = JSON.parse(localStorage.getItem('lemo_user'));
-        if (currentUser) {
-          const progressKey = `lemo_progress_${currentUser.name}`;
-          const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || [];
-          if (!savedProgress.includes(lesson.id)) {
-            const newProgress = [...savedProgress, lesson.id];
-            localStorage.setItem(progressKey, JSON.stringify(newProgress));
-            const { data: existing } = await supabase
-              .from('users').select('completed_modules').eq('name', currentUser.name).maybeSingle();
-            if (existing) {
-              const updated = [...new Set([...(existing.completed_modules || []), lesson.id])];
-              await supabase.from('users').update({ completed_modules: updated }).eq('name', currentUser.name);
+          const currentUser = JSON.parse(localStorage.getItem('lemo_user'));
+          if (currentUser) {
+            const progressKey = `lemo_progress_${currentUser.name}`;
+            const savedProgress = JSON.parse(localStorage.getItem(progressKey)) || [];
+            if (!savedProgress.includes(lesson.id)) {
+              const newProgress = [...savedProgress, lesson.id];
+              localStorage.setItem(progressKey, JSON.stringify(newProgress));
+              
+              if (currentUser.email) {
+                const { data: existing } = await supabase
+                  .from('users').select('completed_modules').eq('email', currentUser.email).maybeSingle();
+                if (existing) {
+                  const updated = [...new Set([...(existing.completed_modules || []), lesson.id])];
+                  await supabase.from('users').update({ completed_modules: updated }).eq('email', currentUser.email);
+                }
+              }
+              if (onComplete) onComplete(lesson.id);
             }
-            if (onComplete) onComplete(lesson.id);
           }
-        }
       }
     } else {
       audio.playError();

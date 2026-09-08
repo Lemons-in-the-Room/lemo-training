@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Stethoscope, ArrowRight, ShieldCheck, Sparkles, Type, SquareUser, Building2, ChevronDown, Check, Mail, Phone } from 'lucide-react';
+import { Stethoscope, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, Type, SquareUser, Building2, ChevronDown, Check, Mail, Phone, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useLang } from './LanguageContext';
 import { audio } from './utils/audio';
@@ -76,24 +76,39 @@ const loadHospitals = async () => {
   return hospitalsCache;
 };
 
-const Field = ({ icon: Icon, label, placeholder, value, onChange, accent = '#8756FA', type = 'text' }) => (
-  <div className="space-y-1.5">
-    <label className="block text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-[0.18em]">{label}</label>
-    <div className="relative group">
-      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10" />
-      <input
-        type={type}
-        required
-        autoComplete="off"
-        value={value}
-        onChange={(e) => onChange(capitalize(e.target.value))}
-        placeholder={placeholder}
-        style={{ '--accent': accent }}
-        className="block w-full pl-9 pr-3 h-10 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/[0.08] focus:border-[var(--accent)]/60 rounded-xl text-white text-[13px] font-semibold placeholder-slate-600 outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] focus:shadow-[0_0_0_3px_var(--accent)/0.15,inset_0_1px_2px_rgba(0,0,0,0.4)]"
-      />
+const Field = ({ icon: Icon, label, placeholder, value, onChange, accent = '#8756FA', type = 'text', disableCapitalize = false }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === 'password';
+  const currentType = isPassword && showPassword ? 'text' : type;
+
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-[11px] font-bold text-slate-200 uppercase ml-1 tracking-[0.18em]">{label}</label>
+      <div className="relative group">
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10" />
+        <input
+          type={currentType}
+          required
+          autoComplete="off"
+          value={value}
+          onChange={(e) => onChange(disableCapitalize || isPassword ? e.target.value : capitalize(e.target.value))}
+          placeholder={placeholder}
+          style={{ '--accent': accent }}
+          className="block w-full pl-9 pr-10 h-10 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/[0.08] focus:border-[var(--accent)]/60 rounded-xl text-white text-[13px] font-semibold placeholder-slate-600 outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] focus:shadow-[0_0_0_3px_var(--accent)/0.15,inset_0_1px_2px_rgba(0,0,0,0.4)]"
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-white transition-colors z-10"
+          >
+            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          </button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const HospitalSearch = ({ value, onChange, placeholder, label }) => {
   const [query, setQuery] = useState(value || '');
@@ -135,7 +150,7 @@ const HospitalSearch = ({ value, onChange, placeholder, label }) => {
 
   return (
     <div className="space-y-1.5">
-      {label && <label className="block text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-[0.18em]">{label}</label>}
+      {label && <label className="block text-[11px] font-bold text-slate-200 uppercase ml-1 tracking-[0.18em]">{label}</label>}
       <div ref={containerRef} className="relative group">
         <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10 pointer-events-none" />
         <input
@@ -218,99 +233,120 @@ const BrandPanel = () => (
 const Welcome = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  const [authType, setAuthType] = useState('login');
+  const [regStep, setRegStep] = useState(1);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [hospital, setHospital] = useState('');
   const [department, setDepartment] = useState('');
   const [patientType, setPatientType] = useState('');
+
   const { t } = useLang();
   const w = t.welcome;
-
   const mode = searchParams.get('mode') || 'guided';
 
-  useEffect(() => {
-    document.body.classList.add('no-bg-before');
-    return () => document.body.classList.remove('no-bg-before');
+  useEffect(() => { 
+    document.body.classList.add('no-bg-before'); 
+    return () => document.body.classList.remove('no-bg-before'); 
   }, []);
 
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem('lemo_user'));
-    if (savedUser && mode !== 'full') {
-      navigate(`/home?mode=${mode}`);
-      return;
-    }
-    if (mode === 'full') navigate(`/home?mode=full`);
+    if (savedUser && mode !== 'full') { navigate(`/home?mode=${mode}`); return; }
+    if (mode === 'full') navigate('/home?mode=full');
   }, [mode, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !hospital.trim() || !department.trim() || !patientType) return;
-
-    audio.playClick();
-    const fullName = `${firstName} ${lastName}`;
-
-    const isDemoAccount = (firstName.toLowerCase().trim() === 'mario' && lastName.toLowerCase().trim() === 'rossi') || firstName.toLowerCase().trim() === 'demo';
-    if (isDemoAccount) {
-      localStorage.setItem(`lemo_progress_${fullName}`, JSON.stringify([1, 2, 3, 4]));
-    }
-
-    const userData = { name: fullName, firstName, lastName, email, phone, hospital, department, patientType, mode };
-    localStorage.setItem('lemo_user', JSON.stringify(userData));
-
-    const now = new Date().toISOString();
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id, login_count, first_login, completed_modules')
-      .eq('name', fullName)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase.from('users').update({
-        first_name: firstName, last_name: lastName, email, phone, hospital, department,
-        patient_type: patientType, mode,
-        login_count: (existing.login_count || 1) + 1,
-        last_login: now,
-        completed_modules: isDemoAccount ? [1, 2, 3, 4] : (existing.completed_modules || []),
-      }).eq('name', fullName);
+  const handleLogin = async (e) => {
+    e.preventDefault(); 
+    if (!email || !password) return;
+    setErrorMsg(''); setLoading(true); audio.playClick();
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setErrorMsg('Email o password errati.'); setLoading(false); return; }
+    
+    const { data: profile } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
+    if (profile) {
+      const userData = { 
+        name: profile.name, 
+        firstName: profile.first_name, 
+        lastName: profile.last_name, 
+        email: profile.email, 
+        phone: profile.phone, 
+        hospital: profile.hospital, 
+        department: profile.department, 
+        patientType: profile.patient_type, 
+        mode: profile.mode || mode 
+      };
+      localStorage.setItem('lemo_user', JSON.stringify(userData));
+      await supabase.from('users').update({ 
+        login_count: (profile.login_count || 0) + 1, 
+        last_login: new Date().toISOString() 
+      }).eq('email', email);
     } else {
-      await supabase.from('users').insert({
-        name: fullName, first_name: firstName, last_name: lastName, email, phone,
-        hospital, department, patient_type: patientType, mode,
-        login_count: 1, first_login: now, last_login: now,
-        completed_modules: isDemoAccount ? [1, 2, 3, 4] : [],
-      });
+      localStorage.setItem('lemo_user', JSON.stringify({ name: email, email, mode }));
     }
-
-    const allUsers = JSON.parse(localStorage.getItem('lemo_all_users')) || {};
-    if (allUsers[fullName]) {
-      allUsers[fullName].loginCount = (allUsers[fullName].loginCount || 1) + 1;
-      allUsers[fullName].lastLogin = now;
-      allUsers[fullName].hospital = hospital;
-      allUsers[fullName].department = department;
-      allUsers[fullName].patientType = patientType;
-      if (isDemoAccount) allUsers[fullName].completedModulesList = [1, 2, 3, 4];
-    } else {
-      allUsers[fullName] = { ...userData, loginCount: 1, firstLogin: now, lastLogin: now, completedModulesList: isDemoAccount ? [1, 2, 3, 4] : [] };
-    }
-    localStorage.setItem('lemo_all_users', JSON.stringify(allUsers));
-
     navigate(`/home?mode=${mode}`);
   };
 
-  const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.25 } } };
+  const handleRegister = async (e) => {
+    e.preventDefault(); 
+    if (!firstName || !lastName || !email || !password || !hospital || !department || !patientType) return;
+    setErrorMsg(''); setLoading(true); audio.playClick();
+    
+    const fullName = `${firstName} ${lastName}`;
+    const now = new Date().toISOString();
+    const isDemoAccount = (firstName.toLowerCase().trim() === 'mario' && lastName.toLowerCase().trim() === 'rossi') || firstName.toLowerCase().trim() === 'demo';
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    if (authError) {
+      setErrorMsg(authError.message.includes('already registered') ? 'Questo indirizzo email è già registrato.' : 'Errore durante la registrazione. Riprova.');
+      setLoading(false); return;
+    }
+
+    await supabase.from('users').insert({
+      id: authData.user.id,
+      name: fullName, first_name: firstName, last_name: lastName, email: email, phone: phone,
+      hospital, department, patient_type: patientType, mode,
+      login_count: 1, first_login: now, last_login: now,
+      completed_modules: isDemoAccount ? [1, 2, 3, 4] : [],
+    });
+
+    const userData = { name: fullName, firstName, lastName, email, phone, hospital, department, patientType, mode };
+    localStorage.setItem('lemo_user', JSON.stringify(userData));
+    if (isDemoAccount) localStorage.setItem(`lemo_progress_${fullName}`, JSON.stringify([1, 2, 3, 4]));
+    navigate(`/home?mode=${mode}`);
+  };
+
+  const handleForgot = async (e) => {
+    e.preventDefault(); 
+    if (!email) { setErrorMsg('Inserisci la tua email qui sopra.'); return; }
+    setLoading(true); setErrorMsg(''); audio.playClick();
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) { 
+      setErrorMsg('Errore invio email.'); 
+    } else { 
+      setErrorMsg('Successo! Controlla la tua email.'); 
+    }
+    setLoading(false);
+  };
+
+  const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.1 } } };
   const item = { hidden: { y: 16, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 110, damping: 20 } } };
 
-  const canSubmit = firstName.trim() && lastName.trim() && email.trim() && hospital.trim() && department.trim() && patientType;
+  const canSubmitLogin = email.trim() && password.trim();
+  const canSubmitRegStep1 = firstName.trim() && lastName.trim() && email.trim() && password.trim();
+  const canSubmitRegStep2 = hospital.trim() && department.trim() && patientType;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 1 }}
-      className="relative min-h-[100dvh] w-full font-sans text-white overflow-x-hidden"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 1 }} className="relative min-h-[100dvh] w-full font-sans text-white overflow-x-hidden">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/images/bg-clouds.webp')" }} />
         <div className="absolute inset-0 opacity-[0.035] mix-blend-overlay" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }} />
@@ -318,167 +354,172 @@ const Welcome = () => {
 
       <header className="relative z-20 grid grid-cols-3 items-center px-5 sm:px-8 lg:px-10 pt-8 sm:pt-10 lg:pt-10">
         <div />
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="justify-self-center"
-        >
-          <img
-            src="/images/logos/logo esteso bianco png.png"
-            alt="Lemons in the room"
-            className="h-12 sm:h-16 lg:h-14 w-auto object-contain drop-shadow-[0_2px_12px_rgba(3,9,27,0.35)] drop-shadow-[0_8px_32px_rgba(3,9,27,0.20)]"
-          />
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} className="justify-self-center">
+          <img src="/images/logos/logo esteso bianco png.png" alt="Lemons in the room" className="h-12 sm:h-16 lg:h-14 w-auto object-contain drop-shadow-[0_2px_12px_rgba(3,9,27,0.35)]" />
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="justify-self-end"
-        >
+        <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="justify-self-end">
           <LangPicker />
         </motion.div>
       </header>
 
       <main className="relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-4 min-h-[calc(100dvh-60px)]">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="visible"
-          className="w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-center"
-        >
+        <motion.div variants={container} initial="hidden" animate="visible" className="w-full max-w-[1100px] grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-8 items-center">
           <BrandPanel />
 
-          <motion.section
-            variants={item}
-            className="relative overflow-hidden rounded-[1.5rem] lg:rounded-[2rem] bg-[#03091B]/55 backdrop-blur-[40px] border border-white/[0.12] shadow-[0_30px_80px_-20px_rgba(3,9,27,0.6)] p-5 sm:p-6 lg:p-6"
-          >
+          <motion.section variants={item} className="relative overflow-hidden rounded-[1.5rem] lg:rounded-[2rem] bg-[#03091B]/55 backdrop-blur-[40px] border border-white/[0.12] shadow-[0_30px_80px_-20px_rgba(3,9,27,0.6)] p-5 sm:p-6 lg:p-6">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full bg-[#FF8731] opacity-[0.10] blur-[80px] pointer-events-none" />
-
-            <motion.div variants={item} className="relative z-10 mb-3 lg:mb-4 flex flex-col items-center">
-              <span className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/[0.22] border border-white/[0.40] mb-3">
+            
+            <motion.div variants={item} className="relative z-10 mb-5 flex flex-col items-center">
+              <span className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/[0.22] border border-white/[0.40] mb-2">
                 <img src="/images/logos/logo png.png" alt="" aria-hidden="true" className="w-4 h-4 object-contain drop-shadow-[0_0_6px_rgba(255,135,49,0.5)]" />
                 <span
                   className="text-[10px] font-black tracking-[0.18em] uppercase bg-clip-text text-transparent"
                   style={{ backgroundImage: 'linear-gradient(90deg, #FF8731 0%, #FF9E54 40%, #B385FF 75%, #8756FA 100%)', backgroundSize: '200% 100%', animation: 'lemo-badge-shift 4s ease-in-out infinite alternate' }}
                 >{w.badge}</span>
               </span>
-              <h2 className="font-serif font-black text-white text-[32px] sm:text-[40px] lg:text-[36px] leading-[1] tracking-[-0.035em] text-center">
-                {w.title}
-              </h2>
-              <p className="mt-1.5 text-slate-300 text-[12px] sm:text-[13px] font-medium leading-relaxed max-w-[360px] text-center">
-                {w.description}
-              </p>
             </motion.div>
 
-            <form onSubmit={handleSubmit} className="relative z-10 space-y-2.5">
-              <motion.div variants={item} className="grid grid-cols-2 gap-2.5">
-                <Field icon={Type} label={w.firstName} placeholder={w.placeholderFirst} value={firstName} onChange={setFirstName} accent="#8756FA" />
-                <Field icon={SquareUser} label={w.lastName} placeholder={w.placeholderLast} value={lastName} onChange={setLastName} accent="#8756FA" />
-              </motion.div>
+            <div className="flex bg-white/[0.05] p-1 rounded-xl mb-6 relative z-10">
+              {['login', 'register'].map((tab) => {
+                const isActive = authType === tab;
+                const label = tab === 'login' ? 'Accedi' : 'Registrati';
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => { 
+                      audio.playClick(); 
+                      setAuthType(tab); 
+                      if (tab === 'register') setRegStep(1); 
+                      setErrorMsg(''); 
+                    }}
+                    className={`relative flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors z-10 ${isActive ? 'text-white' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="authTabBubble"
+                        initial={false}
+                        className="absolute inset-0 rounded-lg -z-10 shadow-lg"
+                        style={{ background: 'linear-gradient(90deg, #8756FA 0%, #FF8731 100%)' }}
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-              <motion.div variants={item} className="grid grid-cols-2 gap-2.5">
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-[0.18em]">{w.email}</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10" />
-                    <input
-                      type="email" required autoComplete="email" value={email}
-                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
-                      placeholder={w.placeholderEmail}
-                      style={{ '--accent': '#8756FA' }}
-                      className="block w-full pl-9 pr-3 h-10 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/[0.08] focus:border-[var(--accent)]/60 rounded-xl text-white text-[13px] font-semibold placeholder-slate-600 outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]"
-                    />
-                  </div>
+            <AnimatePresence mode="wait">
+              {errorMsg && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`mb-4 p-3 rounded-xl flex items-center gap-2 text-sm font-bold ${errorMsg.includes('Successo') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {errorMsg}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {authType === 'login' && (
+              <form onSubmit={handleLogin} className="relative z-10 space-y-4">
+                <Field icon={Mail} label={w.email} placeholder={w.placeholderEmail} value={email} onChange={(v) => setEmail(v.toLowerCase())} type="email" accent="#8756FA" disableCapitalize={true} />
+                <Field icon={Lock} label="Password" placeholder="••••••••" value={password} onChange={setPassword} type="password" accent="#FF8731" />
+                
+                <div className="flex justify-end pt-1">
+                  <button type="button" onClick={() => { audio.playClick(); setAuthType('forgot'); setErrorMsg(''); }} className="text-[11px] font-bold text-slate-400 hover:text-white transition-colors">
+                    Hai dimenticato la password?
+                  </button>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-[0.18em]">
-                    {w.phone} <span className="text-slate-600 normal-case tracking-normal font-medium">{w.phoneOptional}</span>
-                  </label>
-                  <div className="relative group">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10" />
-                    <input
-                      type="tel" autoComplete="tel" value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder={w.placeholderPhone}
-                      style={{ '--accent': '#8756FA' }}
-                      className="block w-full pl-9 pr-3 h-10 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/[0.08] focus:border-[var(--accent)]/60 rounded-xl text-white text-[13px] font-semibold placeholder-slate-600 outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]"
-                    />
-                  </div>
+
+                <div className="pt-2">
+                  <motion.button type="submit" disabled={!canSubmitLogin || loading} className="group relative w-full h-11 rounded-xl overflow-hidden font-bold text-[14px] tracking-tight text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: canSubmitLogin ? 'linear-gradient(90deg, #8756FA 0%, #B385FF 50%, #FF8731 100%)' : 'rgba(255,255,255,0.06)' }}>
+                    <span className="relative z-10 flex items-center justify-center gap-2">{loading ? 'Caricamento...' : 'Entra in piattaforma'} <ArrowRight className="w-4 h-4" /></span>
+                  </motion.button>
                 </div>
-              </motion.div>
+              </form>
+            )}
 
-              <motion.div variants={item}>
-                <HospitalSearch value={hospital} onChange={setHospital} placeholder={w.placeholderHospital} label={w.hospital} />
-              </motion.div>
+            {authType === 'register' && (
+              <form onSubmit={handleRegister} className="relative z-10 space-y-4">
+                <AnimatePresence mode="wait">
+                  {regStep === 1 ? (
+                    <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <Field icon={Type} label={w.firstName} placeholder={w.placeholderFirst} value={firstName} onChange={setFirstName} accent="#8756FA" />
+                        <Field icon={SquareUser} label={w.lastName} placeholder={w.placeholderLast} value={lastName} onChange={setLastName} accent="#8756FA" />
+                      </div>
+                      <Field icon={Mail} label={w.email} placeholder={w.placeholderEmail} value={email} onChange={(v) => setEmail(v.toLowerCase())} type="email" accent="#8756FA" disableCapitalize={true} />
+                      <Field icon={Lock} label="Password" placeholder="Crea una password" value={password} onChange={setPassword} type="password" accent="#8756FA" />
+                      
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold text-slate-200 uppercase ml-1 tracking-[0.18em]">
+                          {w.phone} <span className="text-slate-400 normal-case tracking-normal font-medium">{w.phoneOptional}</span>
+                        </label>
+                        <div className="relative group">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 group-focus-within:text-white transition-colors duration-300 z-10" />
+                          <input type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={w.placeholderPhone} style={{ '--accent': '#8756FA' }} className="block w-full pl-9 pr-3 h-10 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] border border-white/[0.08] focus:border-[var(--accent)]/60 rounded-xl text-white text-[13px] font-semibold placeholder-slate-600 outline-none transition-all duration-300" />
+                        </div>
+                      </div>
 
-              <motion.div variants={item}>
-                <Field icon={Stethoscope} label={w.department} placeholder={w.placeholderDept} value={department} onChange={setDepartment} accent="#FF8731" />
-              </motion.div>
+                      <div className="pt-3">
+                        <motion.button type="button" onClick={() => { audio.playClick(); setRegStep(2); }} disabled={!canSubmitRegStep1} className="group relative w-full h-11 rounded-xl overflow-hidden font-bold text-[14px] tracking-tight text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: canSubmitRegStep1 ? 'rgba(255,135,49,0.2)' : 'rgba(255,255,255,0.06)', border: canSubmitRegStep1 ? '1px solid rgba(255,135,49,0.5)' : '1px solid transparent' }}>
+                          <span className="relative z-10 flex items-center justify-center gap-2 text-[#FF8731]">Continua <ArrowRight className="w-4 h-4" /></span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                      <HospitalSearch value={hospital} onChange={setHospital} placeholder={w.placeholderHospital} label={w.hospital} />
+                      <Field icon={Stethoscope} label={w.department} placeholder={w.placeholderDept} value={department} onChange={setDepartment} accent="#FF8731" />
+                      
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-200 uppercase ml-1 tracking-[0.18em] mb-2">{w.patientProfile}</label>
+                        <div className="flex gap-4 justify-center">
+                          {[
+                            { id: 'pediatria', label: w.pediatria, accent: '#8756FA', img: '/images/profilo-pediatria.webp' },
+                            { id: 'adulti',    label: w.adulti,    accent: '#FF8731', img: '/images/profilo-adulti.webp'    },
+                          ].map(p => {
+                            const sel = patientType === p.id;
+                            return (
+                              <motion.label key={p.id} whileHover={{ scale: sel ? 1.03 : 1.02 }} whileTap={{ scale: 0.97 }} className="relative rounded-full overflow-hidden cursor-pointer flex-shrink-0" style={{ width: '150px', height: '150px', border: sel ? `2px solid ${p.accent}` : '1px solid rgba(255,255,255,0.10)' }}>
+                                <input type="radio" name="patientType" value={p.id} className="hidden" onChange={(e) => { audio.playClick(); setPatientType(e.target.value); }} />
+                                <img src={p.img} alt={p.label} className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${sel ? 'opacity-100 scale-105' : 'opacity-40 grayscale'}`} />
+                                <div className="absolute inset-0" style={{ background: sel ? `linear-gradient(to top, #03091B 5%, ${p.accent}aa 55%, transparent 100%)` : 'linear-gradient(to top, #03091B 5%, rgba(3,9,27,0.55) 55%, transparent 100%)' }} />
+                                <span className={`absolute left-0 right-0 bottom-3 text-center font-serif font-black tracking-tight text-[13px] ${sel ? 'text-white' : 'text-slate-200'}`}>{p.label}</span>
+                              </motion.label>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-              <motion.div variants={item}>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-[0.18em] mb-2">{w.patientProfile}</label>
-                <div className="flex gap-4 justify-center">
-                  {[
-                    { id: 'pediatria', label: w.pediatria, accent: '#8756FA', img: '/images/profilo-pediatria.webp' },
-                    { id: 'adulti',    label: w.adulti,    accent: '#FF8731', img: '/images/profilo-adulti.webp'    },
-                  ].map(p => {
-                    const sel = patientType === p.id;
-                    return (
-                      <motion.label
-                        key={p.id}
-                        whileHover={{ scale: sel ? 1.03 : 1.02 }}
-                        whileTap={{ scale: 0.97 }}
-                        className="relative rounded-full overflow-hidden cursor-pointer transition-shadow duration-300 flex-shrink-0"
-                        style={{
-                          width: '160px', height: '160px',
-                          border: sel ? `2px solid ${p.accent}` : '1px solid rgba(255,255,255,0.10)',
-                          boxShadow: sel ? `0 0 0 4px ${p.accent}25, 0 12px 40px -10px ${p.accent}99` : '0 8px 24px -10px rgba(0,0,0,0.6)',
-                        }}
-                      >
-                        <input type="radio" name="patientType" value={p.id} className="hidden"
-                          onChange={(e) => { audio.playClick(); setPatientType(e.target.value); }} />
-                        <img src={p.img} alt={p.label}
-                          className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${sel ? 'opacity-100 scale-105' : 'opacity-40 grayscale'}`} />
-                        <div className="absolute inset-0 transition-opacity duration-500"
-                          style={{ background: sel ? `linear-gradient(to top, #03091B 5%, ${p.accent}aa 55%, transparent 100%)` : 'linear-gradient(to top, #03091B 5%, rgba(3,9,27,0.55) 55%, transparent 100%)' }} />
-                        <span className={`absolute left-0 right-0 bottom-3 text-center font-serif font-black tracking-tight transition-colors duration-300 text-[13px] ${sel ? 'text-white' : 'text-slate-200'}`}
-                          style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9)' }}>
-                          {p.label}
-                        </span>
-                      </motion.label>
-                    );
-                  })}
-                </div>
-              </motion.div>
-
-              <motion.div variants={item} className="pt-1">
-                <motion.button
-                  type="submit"
-                  whileHover={canSubmit ? { scale: 1.015, y: -1 } : {}}
-                  whileTap={canSubmit ? { scale: 0.98 } : {}}
-                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                  disabled={!canSubmit}
-                  className="group relative w-full h-11 rounded-xl overflow-hidden font-bold text-[14px] tracking-tight text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    background: canSubmit ? 'linear-gradient(90deg, #8756FA 0%, #B385FF 50%, #FF8731 100%)' : 'rgba(255,255,255,0.06)',
-                    boxShadow: canSubmit ? '0 15px 40px -10px rgba(255,135,49,0.5), 0 8px 24px -8px rgba(135,86,250,0.5), inset 0 1px 0 rgba(255,255,255,0.3)' : 'none',
-                  }}
-                >
-                  {canSubmit && (
-                    <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
+                      <div className="pt-3 flex gap-3">
+                        <button type="button" onClick={() => { audio.playClick(); setRegStep(1); }} className="px-4 h-11 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 font-bold flex items-center justify-center transition-colors">
+                          <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <motion.button type="submit" disabled={!canSubmitRegStep2 || loading} className="flex-1 group relative h-11 rounded-xl overflow-hidden font-bold text-[14px] text-white transition-all duration-300 disabled:opacity-50" style={{ background: canSubmitRegStep2 ? 'linear-gradient(90deg, #8756FA 0%, #B385FF 50%, #FF8731 100%)' : 'rgba(255,255,255,0.06)' }}>
+                          <span className="relative z-10 flex items-center justify-center gap-2">{loading ? 'Creazione...' : 'Crea Account'} <Check className="w-4 h-4" /></span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
                   )}
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {w.submit}
-                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
-                  </span>
-                </motion.button>
-                <p className="text-center text-slate-400 text-[10px] mt-2 font-medium uppercase tracking-widest">
-                  {w.badge}
-                </p>
-              </motion.div>
-            </form>
+                </AnimatePresence>
+              </form>
+            )}
+
+            {authType === 'forgot' && (
+              <form onSubmit={handleForgot} className="relative z-10 space-y-4">
+                <p className="text-sm text-slate-300 font-medium text-center mb-4">Inserisci la tua email e ti invieremo un link per creare una nuova password.</p>
+                <Field icon={Mail} label={w.email} placeholder={w.placeholderEmail} value={email} onChange={(v) => setEmail(v.toLowerCase())} type="email" accent="#8756FA" disableCapitalize={true} />
+                
+                <div className="pt-2 flex flex-col gap-3">
+                  <motion.button type="submit" disabled={!email || loading} className="group relative w-full h-11 rounded-xl overflow-hidden font-bold text-[14px] text-white transition-all disabled:opacity-50" style={{ background: email ? 'linear-gradient(90deg, #8756FA 0%, #B385FF 50%, #FF8731 100%)' : 'rgba(255,255,255,0.06)' }}>
+                    <span className="relative z-10 flex items-center justify-center">{loading ? 'Invio in corso...' : 'Invia link di recupero'}</span>
+                  </motion.button>
+                  <button type="button" onClick={() => { audio.playClick(); setAuthType('login'); setErrorMsg(''); }} className="text-xs font-bold text-slate-400 hover:text-white transition-colors text-center">
+                    Torna al Login
+                  </button>
+                </div>
+              </form>
+            )}
+            
           </motion.section>
         </motion.div>
       </main>

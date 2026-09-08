@@ -230,7 +230,7 @@ const onHeroMove = (e) => {
     const timer = setTimeout(async () => {
       const u = userRef.current;
       if (u?.name) {
-        const { data } = await supabase.from('users').select('newsletter_opt_in').eq('name', u.name).single();
+        const { data } = await supabase.from('users').select('newsletter_opt_in').eq('email', u.email).single();
         if (data?.newsletter_opt_in === true) {
           localStorage.setItem('lemo_newsletter_subscribed', '1');
           return;
@@ -246,7 +246,9 @@ const onHeroMove = (e) => {
     if (!userEmail) return;
     setNewsletterStatus('loading');
     await supabase.from('newsletter').upsert({ email: userEmail }, { onConflict: 'email' });
-    await supabase.from('users').update({ newsletter_opt_in: true }).eq('name', user.name);
+    if (user?.email) {
+      await supabase.from('users').update({ newsletter_opt_in: true }).eq('email', user.email);
+    }
     setNewsletterStatus('success');
     localStorage.setItem('lemo_newsletter_subscribed', '1');
     setTimeout(() => setShowNewsletter(false), 2500);
@@ -254,8 +256,8 @@ const onHeroMove = (e) => {
 
   const closeNewsletter = async () => {
     setShowNewsletter(false);
-    if (user?.name) {
-      await supabase.from('users').update({ newsletter_opt_in: false }).eq('name', user.name);
+    if (user?.email) {
+      await supabase.from('users').update({ newsletter_opt_in: false }).eq('email', user.email);
     }
   };
 
