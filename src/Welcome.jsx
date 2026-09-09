@@ -498,6 +498,12 @@ const Welcome = () => {
                           <span className="relative z-10 flex items-center justify-center gap-2">{loading ? 'Creazione...' : 'Crea Account'} <Check className="w-4 h-4" /></span>
                         </motion.button>
                       </div>
+
+                      <div className="pt-1 text-center">
+                        <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[280px] mx-auto">
+                          I tuoi dati sono protetti da crittografia end-to-end e rimarranno strettamente privati. Non verranno mai condivisi con terzi.
+                        </p>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
