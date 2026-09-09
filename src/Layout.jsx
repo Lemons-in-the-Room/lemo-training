@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from './ThemeContext';
 import { useLang } from './LanguageContext';
 import { audio } from './utils/audio';
+import { supabase } from './utils/supabase';
 
 const LANGUAGES = [
   { code: 'it', label: 'Italiano', flag: 'https://flagcdn.com/w40/it.png' },
@@ -96,13 +97,14 @@ const MobileLangPicker = ({ isDarkMode, inline }) => {
   );
 };
 
-const Layout = () => {
-  const [searchParams] = useSearchParams();
-  const mode = searchParams.get('mode') || 'guided';
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { isDarkMode } = useContext(ThemeContext);
-  const { t } = useLang();
+  const Layout = () => {
+    const [searchParams] = useSearchParams();
+    const mode = searchParams.get('mode') || 'guided';
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { isDarkMode } = useContext(ThemeContext);
+    const { t } = useLang();
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const isHome = location.pathname.includes('/home');
 
@@ -112,16 +114,63 @@ const Layout = () => {
     { icon: LifeBuoy, label: t.nav.support, path: `/support?mode=${mode}` },
   ];
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    audio.playClick();
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
     audio.playClick();
     localStorage.removeItem('lemo_user');
+    await supabase.auth.signOut();
     window.location.href = '/';
+  };
+
+  const cancelLogout = () => {
+    audio.playClick();
+    setShowLogoutConfirm(false);
   };
 
   const handleNavClick = () => audio.playClick();
 
   return (
     <div className="font-sans md:flex md:h-[100dvh] md:overflow-hidden">
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#040F2A] border border-white/10 p-6 rounded-3xl max-w-sm w-full shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2 text-center">Sei sicuro di voler uscire?</h3>
+              <p className="text-slate-400 text-sm text-center mb-6">Dovrai inserire nuovamente le tue credenziali per rientrare nella piattaforma.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelLogout}
+                  className="flex-1 py-3 px-4 rounded-xl text-slate-300 font-bold bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  Annulla
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 py-3 px-4 rounded-xl text-white font-bold bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
+                >
+                  Sì, esci
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background fisso solo per le pagine interne */}
       <div className="fixed inset-0 -z-10 md:hidden" style={{ background: '#03091B' }} />
       <div className="fixed inset-0 -z-10 hidden md:block bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/images/bg-pc.webp')" }} />
@@ -171,7 +220,7 @@ const Layout = () => {
             <span className="text-base 2xl:text-lg">{t.nav.visitSite}</span>
           </a>
 
-          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-500 hover:text-red-400 hover:bg-red-500/10">
+          <button onClick={handleLogoutClick} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-500 hover:text-red-400 hover:bg-red-500/10">
             <LogOut className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:-translate-x-1 transition-transform duration-300" />
             <span className="text-base 2xl:text-lg">{t.nav.logout}</span>
           </button>
@@ -183,7 +232,7 @@ const Layout = () => {
         <a href="https://www.lemonsintheroom.com/" target="_blank" rel="noopener noreferrer" onClick={() => audio.playClick()} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-slate-400 hover:text-white">
           <Globe className="w-5 h-5" />
         </a>
-        <button onClick={handleLogout} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-red-400 hover:text-red-300 hover:bg-red-500/10">
+        <button onClick={handleLogoutClick} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-red-400 hover:text-red-300 hover:bg-red-500/10">
           <LogOut className="w-5 h-5 ml-0.5" />
         </button>
       </div>
