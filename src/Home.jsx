@@ -227,6 +227,7 @@ const onHeroMove = (e) => {
 
   useEffect(() => {
     if (localStorage.getItem('lemo_newsletter_subscribed') === '1') return;
+    if (sessionStorage.getItem('lemo_newsletter_dismissed') === '1') return;
     const timer = setTimeout(async () => {
       const u = userRef.current;
       if (u?.name) {
@@ -256,6 +257,7 @@ const onHeroMove = (e) => {
 
   const closeNewsletter = async () => {
     setShowNewsletter(false);
+    sessionStorage.setItem('lemo_newsletter_dismissed', '1');
     if (user?.email) {
       await supabase.from('users').update({ newsletter_opt_in: false }).eq('email', user.email);
     }
