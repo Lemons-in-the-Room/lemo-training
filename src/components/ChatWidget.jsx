@@ -57,7 +57,7 @@ const ChatWidget = () => {
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-            className="fixed z-[90] right-4 left-4 bottom-44 md:left-auto md:right-8 md:bottom-28 md:w-[400px] h-[70dvh] md:h-[560px] flex flex-col rounded-[1.75rem] overflow-hidden bg-[#040F2A]/95 backdrop-blur-[40px] border border-white/[0.12] shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
+            className="fixed z-[90] right-4 left-4 bottom-44 md:left-auto md:right-8 md:bottom-28 md:w-[400px] h-[min(560px,calc(100dvh-13rem))] md:h-[min(560px,calc(100dvh-10rem))] flex flex-col rounded-[1.75rem] overflow-hidden bg-[#040F2A]/95 backdrop-blur-[40px] border border-white/[0.12] shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
               <div className="flex items-center gap-2 text-white font-bold">
