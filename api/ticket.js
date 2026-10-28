@@ -171,7 +171,7 @@ function buildMail(t) {
   ].filter(Boolean).join('\n');
 
   return {
-    subject: `🚨 TICKET ${t.ticketType.toUpperCase()} · ${t.hospital || 'Piattaforma'} · ${t.subject}`,
+    subject: `⚠️ TICKET ${t.ticketType.toUpperCase()} · ${t.hospital || 'Piattaforma'} · ${t.subject}`,
     html,
     text,
   };
@@ -185,7 +185,7 @@ async function sendMail(t) {
   });
   const m = buildMail(t);
   await transporter.sendMail({
-    from: { name: '🚨 TICKET LEMO', address: SMTP_USER },
+    from: { name: '⚠️ TICKET LEMO', address: SMTP_USER },
     priority: 'high',
     to: TICKET_TO,
     replyTo: t.email ? { name: t.name, address: t.email } : undefined,
