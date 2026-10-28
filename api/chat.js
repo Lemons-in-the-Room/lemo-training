@@ -107,7 +107,9 @@ export default async function handler(req, res) {
   }
 
   const answer = String(out.answer || '').trim();
-  const sources = Array.isArray(out.sources) ? out.sources.map(String).slice(0, 6) : [];
+  const sources = Array.isArray(out.sources)
+    ? [...new Set(out.sources.map(x => String(x).replace(/\s*\((aggiornato|rif\.)[^)]*\)/gi, '').replace(/\s*\[[^\]]*\]/g, '').trim()))].filter(Boolean).slice(0, 6)
+    : [];
   const answered = out.answered !== false;
 
   await db.from('chat_logs').insert({ user_id: userId, lang, question: q, answer, sources, answered });
