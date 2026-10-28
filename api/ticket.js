@@ -96,7 +96,7 @@ function buildMail(t) {
   const html = `<!doctype html>
 <html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(t.subject)}</title></head>
 <body style="margin:0;padding:0;background:#F3F1FA">
-<div style="display:none;max-height:0;overflow:hidden">${esc(t.hospital || '')} · ${esc(t.message.slice(0, 120))}</div>
+<div style="display:none;max-height:0;overflow:hidden">⏱ Da risolvere entro ${SLA_HOURS} ore · ${esc(t.name)}${t.department ? ` (${esc(t.department)})` : ''}: ${esc(t.message.slice(0, 110))}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1FA;padding:28px 12px">
 <tr><td align="center">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:22px;overflow:hidden;box-shadow:0 18px 50px rgba(21,18,51,.10)">
@@ -171,7 +171,7 @@ function buildMail(t) {
   ].filter(Boolean).join('\n');
 
   return {
-    subject: `[Ticket ${t.ticketType}] ${t.subject}${t.hospital ? ` · ${t.hospital}` : ''}`,
+    subject: `🚨 TICKET ${t.ticketType.toUpperCase()} · ${t.hospital || 'Piattaforma'} · ${t.subject}`,
     html,
     text,
   };
@@ -185,7 +185,8 @@ async function sendMail(t) {
   });
   const m = buildMail(t);
   await transporter.sendMail({
-    from: { name: 'Lemons · Supporto Piattaforma', address: SMTP_USER },
+    from: { name: '🚨 TICKET LEMO', address: SMTP_USER },
+    priority: 'high',
     to: TICKET_TO,
     replyTo: t.email ? { name: t.name, address: t.email } : undefined,
     subject: m.subject,
