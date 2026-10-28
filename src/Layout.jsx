@@ -6,6 +6,7 @@ import { ThemeContext } from './ThemeContext';
 import { useLang } from './LanguageContext';
 import { audio } from './utils/audio';
 import { supabase } from './utils/supabase';
+import ChatWidget from './components/ChatWidget';
 
 const LANGUAGES = [
   { code: 'it', label: 'Italiano', flag: 'https://flagcdn.com/w40/it.png' },
@@ -263,6 +264,8 @@ const MobileLangPicker = ({ isDarkMode, inline }) => {
         <div className="fixed bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#8756FA] rounded-full blur-[120px] opacity-20 pointer-events-none -z-10"></div>
         <Outlet />
       </main>
+
+      <ChatWidget />
 
       {/* Bottom Nav Mobile */}
       <div className="md:hidden fixed bottom-3 left-4 right-4 z-50">

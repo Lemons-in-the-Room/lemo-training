@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { QRCodeCanvas } from 'qrcode.react';
 import { supabase } from './utils/supabase';
+import KnowledgeSection from './components/KnowledgeSection';
 
 const MODULE_NAMES = {
   1: 'Kit & Postazione', 2: 'Accensione & Stand-by', 3: 'Posizionamento & Ricarica',
@@ -1051,6 +1052,8 @@ const Admin = () => {
         </div>
 
         {/* Email & Newsletter Section */}
+        <KnowledgeSection />
+
         <EmailSection allUsers={allUsersList} />
 
       </div>
