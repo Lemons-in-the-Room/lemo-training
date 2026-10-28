@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import {
+import { Clock,
   HelpCircle, ChevronDown, Send, CheckCircle, Sparkles, Phone, ShieldCheck,
   Wrench, MessageSquareHeart, AlertTriangle, ArrowRight,
 } from 'lucide-react';
@@ -8,6 +8,7 @@ import {
   useMotionValue, useTransform, useSpring,
 } from 'framer-motion';
 import { audio } from './utils/audio';
+import { supabase } from './utils/supabase';
 import { useLang } from './LanguageContext';
 
 const TAG_COLORS = {
@@ -235,7 +236,7 @@ const Support = () => {
   const [ticketSent, setTicketSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const s = t.support;
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -251,19 +252,22 @@ const Support = () => {
     const savedUser = JSON.parse(localStorage.getItem('lemo_user')) || {};
 
     const payload = {
-      subject: `[${ticketType}] ${ticketSubject}`,
+      subject: ticketSubject,
       ticketType,
       message: ticketMessage,
       user_name: savedUser.name || '—',
       hospital: savedUser.hospital || '—',
       department: savedUser.department || '—',
       patientType: savedUser.patientType || '—',
+      lang,
     };
 
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token || '';
       const r = await fetch('/api/ticket', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
 
@@ -395,39 +399,6 @@ const Support = () => {
           transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col gap-5 lg:gap-6"
         >
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,135,49,0.25), rgba(255,135,49,0.08))',
-                border: '1px solid rgba(255,135,49,0.30)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 20px -8px rgba(255,135,49,0.4)',
-              }}
-            >
-              <Phone className="w-5 h-5 text-[#FF9E54]" strokeWidth={2.2} />
-            </div>
-            <h2 className="font-serif font-black text-white text-[24px] lg:text-[28px] 2xl:text-[34px] tracking-[-0.025em] leading-tight">{s.directTitle}</h2>
-          </div>
-
-          <div className="flex flex-col gap-3 lg:gap-4">
-            <ContactCard
-              name="Leonardo Bragalli"
-              role={s.techSupport}
-              desc={s.techDesc}
-              phone="+39 348 758 9509"
-              accent="orange"
-              callNow={s.callNow}
-            />
-            <ContactCard
-              name="Alessandro Romagnosi"
-              role={s.opSupport}
-              desc={s.opDesc}
-              phone="+39 339 565 8074"
-              accent="purple"
-              callNow={s.callNow}
-            />
-          </div>
-
           {/* Ticket Form */}
           <div className="relative overflow-hidden rounded-[2rem] lg:rounded-[2.25rem] 2xl:rounded-[3rem] p-6 lg:p-8 2xl:p-12 bg-[#040F2A]/65 backdrop-blur-[40px] border border-white/[0.10] shadow-[0_30px_80px_-20px_rgba(3,9,27,0.7)]">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
@@ -448,6 +419,11 @@ const Support = () => {
                 <h3 className="font-serif font-black text-white text-[22px] lg:text-[24px] 2xl:text-[28px] leading-tight tracking-[-0.02em]">{s.ticketTitle}</h3>
                 <p className="text-slate-400 text-[12.5px] 2xl:text-sm font-medium mt-0.5 leading-relaxed pr-2">{s.ticketDesc}</p>
               </div>
+            </div>
+
+            <div className="relative z-10 mb-5 flex items-start gap-2.5 rounded-2xl border border-[#FF8731]/20 bg-[#FF8731]/[0.06] px-4 py-3 text-[12.5px] leading-relaxed text-slate-300 font-medium">
+              <Clock className="w-4 h-4 text-[#FF9E54] shrink-0 mt-0.5" strokeWidth={2.2} />
+              <span>{s.ticketSla}</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -553,6 +529,31 @@ const Support = () => {
                 </motion.form>
               )}
             </AnimatePresence>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,135,49,0.25), rgba(255,135,49,0.08))',
+                border: '1px solid rgba(255,135,49,0.30)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 20px -8px rgba(255,135,49,0.4)',
+              }}
+            >
+              <Phone className="w-5 h-5 text-[#FF9E54]" strokeWidth={2.2} />
+            </div>
+            <h2 className="font-serif font-black text-white text-[24px] lg:text-[28px] 2xl:text-[34px] tracking-[-0.025em] leading-tight">{s.directTitle}</h2>
+          </div>
+
+          <div className="flex flex-col gap-3 lg:gap-4">
+            <ContactCard
+              name="Ing. Leonardo Bragalli"
+              role={s.techSupport}
+              desc={s.techDesc}
+              phone="+39 348 758 9509"
+              accent="orange"
+              callNow={s.callNow}
+            />
           </div>
         </motion.section>
 
