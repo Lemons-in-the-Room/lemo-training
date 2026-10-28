@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Users, CheckCircle, Activity, Building2, Search, History, Download, TrendingUp, ChevronDown, ChevronUp, Lock, Target, Trash2, RefreshCw, Baby, UserRound, ArrowUpDown, X, AlertTriangle, RotateCcw, Unlock, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
+import { ShieldAlert, Users, CheckCircle, Activity, Building2, Search, History, Download, TrendingUp, ChevronDown, ChevronUp, Lock, Target, Trash2, RefreshCw, Baby, UserRound, ArrowUpDown, X, AlertTriangle, RotateCcw, Unlock, ChevronLeft, ChevronRight, MapPin, Star, ShieldCheck, ShieldOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -150,7 +150,10 @@ const EmailSection = ({ allUsers }) => {
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [allUsersList, setAllUsersList] = useState([]);
   const [searchTerm, setSearchParams] = useState('');
@@ -208,6 +211,8 @@ const Admin = () => {
 
     const source = (!error && supaUsers && supaUsers.length > 0)
       ? supaUsers.map(u => ({
+          id: u.id,
+          isAdmin: !!u.is_admin,
           name: u.name,
           firstName: u.first_name,
           lastName: u.last_name,
@@ -318,23 +323,69 @@ const Admin = () => {
     if (data) setNewsletterList(data);
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === 'lemons2026') {
-      setIsAuthenticated(true);
-      loadStats();
-      loadNewsletter();
-    } else {
-      alert('Wrong password!');
-    }
+  // Accesso admin: login Supabase + verifica del ruolo lato database (funzione is_admin).
+  const enterIfAdmin = async () => {
+    const { data: isAdmin, error } = await supabase.rpc('is_admin');
+    if (error || !isAdmin) return false;
+    setIsAuthenticated(true);
+    loadStats();
+    loadNewsletter();
+    return true;
   };
 
-  const deleteUser = (userName) => {
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) await enterIfAdmin();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoginError(''); setLoginLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setLoginError('Email o password errati.'); setLoginLoading(false); return; }
+    const ok = await enterIfAdmin();
+    if (!ok) {
+      await supabase.auth.signOut();
+      setLoginError('Questo account non ha i permessi di amministratore.');
+    }
+    setLoginLoading(false);
+  };
+
+  const handleExit = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('lemo_user');
+    navigate('/');
+  };
+
+  const toggleAdmin = (u) => {
+    const makeAdmin = !u.isAdmin;
+    openConfirm(
+      makeAdmin ? 'Grant Admin Access' : 'Remove Admin Access',
+      makeAdmin
+        ? `Give "${u.name}" access to this dashboard? They will see all operators' data and can manage them.`
+        : `Remove admin access for "${u.name}"?`,
+      async () => {
+        const { error } = await supabase.from('users').update({ is_admin: makeAdmin }).eq('id', u.id);
+        if (error) alert(error.message);
+        loadStats();
+        closeConfirm();
+      },
+      !makeAdmin
+    );
+  };
+
+  const deleteUser = (u) => {
+    const userName = u.name;
     openConfirm(
       'Delete Session',
       `Permanently delete "${userName}"? All data and progress will be lost. This action is irreversible.`,
       async () => {
-        await supabase.from('users').delete().eq('name', userName);
+        const { error } = await supabase.from('users').delete().eq('id', u.id);
+        if (error) { alert(error.message); closeConfirm(); return; }
         const globalUsers = JSON.parse(localStorage.getItem('lemo_all_users')) || {};
         delete globalUsers[userName];
         localStorage.setItem('lemo_all_users', JSON.stringify(globalUsers));
@@ -347,12 +398,13 @@ const Admin = () => {
     );
   };
 
-  const resetProgress = (userName) => {
+  const resetProgress = (u) => {
+    const userName = u.name;
     openConfirm(
       'Reset Progress',
       `Reset the training progress for "${userName}"? The user will be taken back to Module 1 but will keep their account.`,
       async () => {
-        await supabase.from('users').update({ completed_modules: [] }).eq('name', userName);
+        await supabase.from('users').update({ completed_modules: [] }).eq('id', u.id);
         localStorage.removeItem(`lemo_progress_${userName}`);
         const globalUsers = JSON.parse(localStorage.getItem('lemo_all_users')) || {};
         if (globalUsers[userName]) {
@@ -366,13 +418,15 @@ const Admin = () => {
     );
   };
 
-  const unlockAll = (userName, patientType) => {
+  const unlockAll = (u) => {
+    const userName = u.name;
+    const patientType = u.patientType;
     openConfirm(
       'Unlock All Modules',
       `Unlock the entire training path for "${userName}"? All modules will be marked as completed.`,
       async () => {
         const allModules = getModulesForProfile(patientType);
-        await supabase.from('users').update({ completed_modules: allModules }).eq('name', userName);
+        await supabase.from('users').update({ completed_modules: allModules }).eq('id', u.id);
         localStorage.setItem(`lemo_progress_${userName}`, JSON.stringify(allModules));
         const globalUsers = JSON.parse(localStorage.getItem('lemo_all_users')) || {};
         if (globalUsers[userName]) {
@@ -472,8 +526,10 @@ const Admin = () => {
           <h1 className="text-3xl font-black font-serif text-white mb-2">Admin Area</h1>
           <p className="text-slate-400 mb-8">Exclusive access for the Lemons in the room team.</p>
           <form onSubmit={handleLogin} className="space-y-4">
-            <input type="password" placeholder="Admin Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white px-6 py-4 rounded-xl text-center tracking-widest font-mono focus:border-red-500 focus:outline-none transition-colors" />
-            <button type="submit" className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/20 transition-colors">Enter Dashboard</button>
+            <input type="email" autoComplete="username" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white px-6 py-4 rounded-xl text-center focus:border-red-500 focus:outline-none transition-colors" />
+            <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-800 border border-slate-700 text-white px-6 py-4 rounded-xl text-center tracking-widest font-mono focus:border-red-500 focus:outline-none transition-colors" />
+            {loginError && <p className="text-red-400 text-sm font-semibold">{loginError}</p>}
+            <button type="submit" disabled={loginLoading} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/20 transition-colors">{loginLoading ? '…' : 'Enter Dashboard'}</button>
           </form>
           <button onClick={() => navigate('/')} className="mt-6 text-slate-500 hover:text-slate-300 text-sm font-bold">Back to platform</button>
         </motion.div>
@@ -517,7 +573,7 @@ const Admin = () => {
             <button onClick={exportCSV} className="flex-1 md:flex-none px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
               <Download className="w-4 h-4" /> Export CSV
             </button>
-            <button onClick={() => navigate('/')} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-colors border border-slate-700">
+            <button onClick={handleExit} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-colors border border-slate-700">
               Exit
             </button>
           </div>
@@ -803,6 +859,9 @@ const Admin = () => {
                             <div>
                               <div className="font-bold text-white text-base flex items-center gap-2">
                                 {u.name}
+                                {u.isAdmin && (
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#8756FA]/20 text-[#B39BFF] border border-[#8756FA]/30 uppercase tracking-wider">Admin</span>
+                                )}
                                 {u.firstLogin && u.firstLogin.startsWith(todayStr) && (
                                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">New</span>
                                 )}
@@ -880,22 +939,31 @@ const Admin = () => {
                                     <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Quick Actions</p>
                                     <div className="flex flex-wrap gap-2">
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); resetProgress(u.name); }}
+                                        onClick={(e) => { e.stopPropagation(); resetProgress(u); }}
                                         className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 hover:text-amber-300 rounded-xl text-xs font-bold transition-all duration-200"
                                       >
                                         <RotateCcw className="w-3.5 h-3.5" /> Reset Progress
                                       </button>
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); unlockAll(u.name, u.patientType); }}
+                                        onClick={(e) => { e.stopPropagation(); unlockAll(u); }}
                                         className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-bold transition-all duration-200"
                                       >
                                         <Unlock className="w-3.5 h-3.5" /> Unlock All
                                       </button>
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); deleteUser(u.name); }}
+                                        onClick={(e) => { e.stopPropagation(); deleteUser(u); }}
                                         className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 text-red-400 hover:text-red-300 rounded-xl text-xs font-bold transition-all duration-200"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" /> Delete Session
+                                      </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); toggleAdmin(u); }}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${u.isAdmin
+                                          ? 'bg-slate-500/10 hover:bg-slate-500/20 border-slate-500/20 hover:border-slate-500/40 text-slate-300 hover:text-white'
+                                          : 'bg-[#8756FA]/10 hover:bg-[#8756FA]/20 border-[#8756FA]/20 hover:border-[#8756FA]/40 text-[#B39BFF] hover:text-white'}`}
+                                      >
+                                        {u.isAdmin ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                                        {u.isAdmin ? 'Remove Admin' : 'Make Admin'}
                                       </button>
                                     </div>
                                   </div>

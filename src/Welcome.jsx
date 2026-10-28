@@ -301,22 +301,29 @@ const Welcome = () => {
     setErrorMsg(''); setLoading(true); audio.playClick();
     
     const fullName = `${firstName} ${lastName}`;
-    const now = new Date().toISOString();
     const isDemoAccount = (firstName.toLowerCase().trim() === 'mario' && lastName.toLowerCase().trim() === 'rossi') || firstName.toLowerCase().trim() === 'demo';
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    // Il profilo in public.users viene creato dal database (trigger on_auth_user_created)
+    // a partire da questi metadati: niente insert dal browser.
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName, last_name: lastName, phone,
+          hospital, department, patient_type: patientType, mode,
+        },
+      },
+    });
     if (authError) {
       setErrorMsg(authError.message.includes('already registered') ? 'Questo indirizzo email è già registrato.' : 'Errore durante la registrazione. Riprova.');
       setLoading(false); return;
     }
-
-    await supabase.from('users').insert({
-      id: authData.user.id,
-      name: fullName, first_name: firstName, last_name: lastName, email: email, phone: phone,
-      hospital, department, patient_type: patientType, mode,
-      login_count: 1, first_login: now, last_login: now,
-      completed_modules: isDemoAccount ? [1, 2, 3, 4] : [],
-    });
+    if (!authData?.session) {
+      // Conferma email attiva: senza sessione non si può salvare l'avanzamento.
+      setErrorMsg('Registrazione completata. Controlla la tua email per confermare l\'account, poi accedi.');
+      setLoading(false); return;
+    }
 
     const userData = { name: fullName, firstName, lastName, email, phone, hospital, department, patientType, mode };
     localStorage.setItem('lemo_user', JSON.stringify(userData));
