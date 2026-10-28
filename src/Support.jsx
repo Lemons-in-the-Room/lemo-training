@@ -158,7 +158,7 @@ const ContactCard = ({ name, role, desc, phone, accent, callNow }) => {
             </span>
           </div>
           <h3 className="font-serif font-black text-white text-[20px] 2xl:text-[22px] leading-tight truncate">{name}</h3>
-          <p className="text-slate-400 text-[12px] 2xl:text-sm font-medium mt-0.5">{desc}</p>
+          {desc && <p className="text-slate-400 text-[12px] 2xl:text-sm font-medium mt-0.5">{desc}</p>}
         </div>
       </div>
 
@@ -549,7 +549,6 @@ const Support = () => {
             <ContactCard
               name="Ing. Leonardo Bragalli"
               role={s.techSupport}
-              desc={s.techDesc}
               phone="+39 348 758 9509"
               accent="orange"
               callNow={s.callNow}
