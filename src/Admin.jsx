@@ -573,6 +573,9 @@ const Admin = () => {
             <button onClick={exportCSV} className="flex-1 md:flex-none px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
               <Download className="w-4 h-4" /> Export CSV
             </button>
+            <button onClick={() => navigate('/home')} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-colors border border-slate-700">
+              Platform
+            </button>
             <button onClick={handleExit} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold transition-colors border border-slate-700">
               Exit
             </button>

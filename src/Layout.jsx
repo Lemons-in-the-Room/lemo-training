@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { NavLink, Outlet, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { Home, BookOpen, LifeBuoy, LogOut, Globe } from 'lucide-react';
+import { Home, BookOpen, LifeBuoy, LogOut, Globe, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeContext } from './ThemeContext';
 import { useLang } from './LanguageContext';
@@ -105,6 +105,14 @@ const MobileLangPicker = ({ isDarkMode, inline }) => {
     const { isDarkMode } = useContext(ThemeContext);
     const { t } = useLang();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    // Il pulsante admin compare solo se il database conferma il ruolo (funzione is_admin).
+    useEffect(() => {
+      let alive = true;
+      supabase.rpc('is_admin').then(({ data }) => { if (alive) setIsAdmin(data === true); });
+      return () => { alive = false; };
+    }, []);
 
   const isHome = location.pathname.includes('/home');
 
@@ -215,6 +223,13 @@ const MobileLangPicker = ({ isDarkMode, inline }) => {
         <div className="p-4 2xl:p-8 space-y-1 2xl:space-y-2 border-t border-white/[0.08] shrink-0">
           <LangPicker isHome={isHome} isDarkMode={isDarkMode} />
 
+          {isAdmin && (
+            <NavLink to="/admin" onClick={handleNavClick} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-[#B39BFF] hover:text-white hover:bg-[#8756FA]/20">
+              <ShieldCheck className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:scale-110 transition-transform duration-300" />
+              <span className="text-base 2xl:text-lg">{t.nav.admin}</span>
+            </NavLink>
+          )}
+
           <a href="https://www.lemonsintheroom.com/" target="_blank" rel="noopener noreferrer" onClick={() => audio.playClick()} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-400 hover:text-white hover:bg-white/[0.07]">
             <Globe className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:rotate-12 transition-transform duration-500" />
             <span className="text-base 2xl:text-lg">{t.nav.visitSite}</span>
@@ -229,6 +244,11 @@ const MobileLangPicker = ({ isDarkMode, inline }) => {
 
       {/* Mobile Top Actions */}
       <div className="md:hidden fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
+        {isAdmin && (
+          <NavLink to="/admin" onClick={handleNavClick} aria-label={t.nav.admin} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-[#8756FA]/40 text-[#B39BFF] hover:text-white">
+            <ShieldCheck className="w-5 h-5" />
+          </NavLink>
+        )}
         <a href="https://www.lemonsintheroom.com/" target="_blank" rel="noopener noreferrer" onClick={() => audio.playClick()} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-slate-400 hover:text-white">
           <Globe className="w-5 h-5" />
         </a>

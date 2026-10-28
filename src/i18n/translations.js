@@ -1,7 +1,7 @@
 export const translations = {
   it: {
     // Layout
-    nav: { home: 'Home', modules: 'Formazione', support: 'Supporto', visitSite: 'Visita il Sito', logout: 'Chiudi Sessione' },
+    nav: { home: 'Home', modules: 'Formazione', support: 'Supporto', visitSite: 'Visita il Sito', logout: 'Chiudi Sessione', admin: 'Dashboard Admin' },
 
     // Welcome
     welcome: {
@@ -513,7 +513,7 @@ export const translations = {
   },
 
   en: {
-    nav: { home: 'Home', modules: 'Training', support: 'Support', visitSite: 'Visit Website', logout: 'Log Out' },
+    nav: { home: 'Home', modules: 'Training', support: 'Support', visitSite: 'Visit Website', logout: 'Log Out', admin: 'Admin Dashboard' },
     welcome: {
       tagline: 'The training\n',
       taglineAccent: 'that welcomes',
@@ -1016,7 +1016,7 @@ export const translations = {
   },
 
   es: {
-    nav: { home: 'Inicio', modules: 'Formación', support: 'Soporte', visitSite: 'Visitar Sitio', logout: 'Cerrar Sesión' },
+    nav: { home: 'Inicio', modules: 'Formación', support: 'Soporte', visitSite: 'Visitar Sitio', logout: 'Cerrar Sesión', admin: 'Panel de Admin' },
     welcome: {
       tagline: 'El entrenamiento\n',
       taglineAccent: 'que acoge',
