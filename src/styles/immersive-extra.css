@@ -108,3 +108,15 @@
 .imm .onb-q{font-size:clamp(32px,min(5.4vw,8.2vh),76px)}
 @media (max-height:760px){.imm .hero-in{padding-bottom:120px}.imm .onb-a{margin-top:24px}.imm .onb-dots{margin-top:22px}}
 @media (max-width:860px){.imm .scene.hero{padding-top:76px}}
+
+/* accesso: i campi si restringono con la scheda; il menu scorre via con la pagina */
+.imm .acc-card,.imm .acc-form,.imm .fld,.imm .two>*{min-width:0}
+.imm .fld input,.imm .fld textarea,.imm .sel select{width:100%;min-width:0}
+.imm.access .top{position:absolute}
+@media (max-width:1100px){
+  .imm .acc-wrap{grid-template-columns:1fr;max-width:620px;align-items:start;gap:28px}
+  .imm .acc-hero h1{font-size:clamp(40px,7vw,64px)}
+}
+
+/* il video di sfondo deve coprire tutto lo schermo (max-width:100% lasciava una striscia scura a destra) */
+.imm .world .layer{max-width:none}
