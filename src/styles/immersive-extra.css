@@ -266,3 +266,8 @@
 
 /* overflow-x:hidden sul contenitore lo trasformava in area di scorrimento e bloccava gli elementi "sticky" (barra della Home, barra della lezione) */
 .imm{overflow-x:clip}
+
+/* mascotte ferma (richiesta di Leonardo); il fumetto resta, fermo anche lui */
+.imm .mascot-walk img,.imm .mascot-walk .say{animation:none}
+/* la barra lascia libero l'angolo della chat */
+@media (min-width:861px){.imm .prog-in{width:min(1240px,100% - 260px)}}

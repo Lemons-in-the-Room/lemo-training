@@ -56,7 +56,10 @@ export function glideToStop(k) {
 export function glideToNextSection(fromEl) {
   const sec = fromEl?.closest('section');
   const next = sec?.nextElementSibling;
-  if (next) glideTo(window.scrollY + next.getBoundingClientRect().top - 70);
+  if (!next) return;
+  // scene con contenuto fisso (barra della Home): si arriva esattamente all'inizio, così tutto il blocco è nello schermo
+  const offset = next.querySelector('.pin') ? 0 : 70;
+  glideTo(window.scrollY + next.getBoundingClientRect().top - offset);
 }
 
 export function Cue({ label, onClick }) {
