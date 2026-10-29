@@ -17,6 +17,7 @@ export const ui = {
       ofModules: 'di {n} moduli completati',
       subZero: '{n} moduli da un minuto, poi una verifica finale e il certificato.',
       subAll: 'Rispondi alla verifica finale per sbloccare il certificato.',
+      say0: 'Partiamo insieme!', sayN: 'Ancora {n} tappe!', say1: "Manca l'ultima tappa!", sayAll: 'Ora la verifica finale!', sayDone: 'Ce l\'hai fatta!', finish: 'Traguardo',
       start: 'Inizia', resume: 'Riprendi', quiz: 'Fai la verifica finale', questions: '{n} domande', cert: 'Scarica il certificato', min: '{m} min',
     },
     journey: {
@@ -92,6 +93,7 @@ export const ui = {
       ofModules: 'of {n} modules completed',
       subZero: '{n} one-minute modules, then a final test and the certificate.',
       subAll: 'Take the final test to unlock your certificate.',
+      say0: "Let's start together!", sayN: '{n} stages to go!', say1: 'Just one stage left!', sayAll: 'Now the final test!', sayDone: 'You did it!', finish: 'Finish',
       start: 'Start', resume: 'Resume', quiz: 'Take the final test', questions: '{n} questions', cert: 'Download the certificate', min: '{m} min',
     },
     journey: {
@@ -167,6 +169,7 @@ export const ui = {
       ofModules: 'de {n} módulos completados',
       subZero: '{n} módulos de un minuto, luego una prueba final y el certificado.',
       subAll: 'Haz la prueba final para desbloquear el certificado.',
+      say0: '¡Empezamos juntos!', sayN: '¡Quedan {n} etapas!', say1: '¡Solo queda una etapa!', sayAll: '¡Ahora la prueba final!', sayDone: '¡Lo lograste!', finish: 'Meta',
       start: 'Empezar', resume: 'Continuar', quiz: 'Hacer la prueba final', questions: '{n} preguntas', cert: 'Descargar el certificado', min: '{m} min',
     },
     journey: {

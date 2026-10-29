@@ -182,20 +182,87 @@
 .imm .cue{gap:12px}
 .imm .cue-l{padding:6px 14px;border-radius:999px;background:rgba(3,9,27,.55);color:#fff;font-size:14px;letter-spacing:.04em;text-shadow:none;animation:cueText 2s ease-in-out infinite}
 .imm .cue-o{width:68px;height:68px;border:0;outline:0;color:#fff;
-  background:linear-gradient(90deg,#FF3B2F,#FF6A1F 20%,#FF9A3C 45%,#FFC070 55%,#FF9A3C 65%,#FF6A1F 80%,#FF3B2F);background-size:300% 100%;
-  box-shadow:0 10px 30px rgba(255,90,31,.55);animation:cueGrad 3.2s linear infinite,cueGlow 2s ease-in-out infinite}
+  background:linear-gradient(90deg,#FF3B2F,#FF6A1F 20%,#FF9A3C 45%,#FFC070 55%,#FF9A3C 65%,#FF6A1F 80%,#FF3B2F);background-size:200% 100%;
+  box-shadow:0 10px 30px rgba(255,90,31,.55);animation:cueGrad 2.6s ease-in-out infinite alternate,cueGlow 2s ease-in-out infinite}
 .imm .cue-o .halo{border:0;background:radial-gradient(closest-side,rgba(255,135,49,.55),rgba(255,135,49,0));inset:-14px;animation:cueHalo 2s ease-out infinite}
 .imm .cue-o .halo.h2{animation-delay:1s}
 .imm .cue-o b{position:relative;z-index:1;color:#fff;filter:drop-shadow(0 1px 2px rgba(120,20,0,.45))}
 .imm .cue-o .i{stroke-width:3}
 .imm .cue-o .i+.i{opacity:.75}
-@keyframes cueGrad{0%{background-position:0% 50%}100%{background-position:150% 50%}}
+@keyframes cueGrad{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 @keyframes cueGlow{0%,100%{box-shadow:0 10px 30px rgba(255,90,31,.5),0 0 0 0 rgba(255,135,49,.0)}50%{box-shadow:0 12px 40px rgba(255,90,31,.75),0 0 0 8px rgba(255,135,49,.18)}}
 @keyframes cueHalo{from{transform:scale(.8);opacity:.9}to{transform:scale(1.6);opacity:0}}
 .imm .cue:hover .cue-o{transform:scale(1.1)}
 @media (max-width:860px){.imm .cue-o{width:60px;height:60px}}
 
 /* pulsante "Completa la tappa e prosegui": stesso gradiente vivo */
-.imm .lesson-act.ready{background:linear-gradient(90deg,#FF3B2F,#FF6A1F 20%,#FF9A3C 45%,#FFC070 55%,#FF9A3C 65%,#FF6A1F 80%,#FF3B2F);background-size:300% 100%;color:#fff;
-  animation:readyPop .6s var(--spring),cueGrad 3.2s linear infinite,readyGlow 2s ease-out .6s infinite}
+.imm .lesson-act.ready{background:linear-gradient(90deg,#FF3B2F,#FF6A1F 20%,#FF9A3C 45%,#FFC070 55%,#FF9A3C 65%,#FF6A1F 80%,#FF3B2F);background-size:200% 100%;color:#fff;
+  animation:readyPop .6s var(--spring),cueGrad 2.6s ease-in-out infinite alternate,readyGlow 2s ease-out .6s infinite}
 .imm .lesson-act.ready .i{stroke-width:2.6}
+
+/* le ombre e gli aloni delle frecce non vengono più tagliati dal bordo della scena */
+.imm .scene.hero{overflow-x:clip;overflow-y:visible}
+
+/* HOME: numero centrato sulla scritta */
+.imm .bignum{align-items:center}
+.imm .bignum b{line-height:.9;padding-bottom:.06em}
+
+/* HOME: il sentiero con la mascotte */
+.imm .prog-in{width:min(1240px,100% - 2 * var(--m))}
+.imm .trail{position:relative;width:100%;padding-top:150px;margin:6px 0 40px;--w:calc(min(1, var(--p,0) * 1.5) * var(--to) * 100%)}
+.imm .trail .bar{height:18px;margin:0;background:rgba(3,9,27,.45);box-shadow:inset 0 2px 6px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.12)}
+.imm .trail .bar .fill{width:var(--w);background:linear-gradient(90deg,#FF3B2F,#FF6A1F 25%,#FF9A3C 50%,#FFC070 60%,#FF9A3C 75%,#FF6A1F);background-size:200% 100%;animation:cueGrad 2.6s ease-in-out infinite alternate;box-shadow:0 0 24px rgba(255,120,40,.6)}
+.imm .trail .bar .fill::after{display:none}
+.imm .trail .bar .fill::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);background-size:250% 100%;animation:sheen 2.4s ease-in-out infinite}
+@keyframes sheen{from{background-position:150% 0}to{background-position:-100% 0}}
+.imm .trail .tick{width:38px;height:38px;margin:-19px 0 0 -19px;display:grid;place-items:center;background:#0E1736;box-shadow:0 0 0 3px rgba(255,255,255,.35);z-index:2;transition:transform .4s var(--spring)}
+.imm .trail .tick b{font:700 15px 'Open Runde',sans-serif;color:#B7BCD3}
+.imm .trail .tick .i{width:20px;height:20px;stroke-width:3;color:#03091B}
+.imm .trail .tick.t-done{background:#3FC48C;box-shadow:0 0 0 4px rgba(63,196,140,.3)}
+.imm .trail .tick.t-now{background:#fff;box-shadow:0 0 0 4px rgba(255,135,49,.7);animation:tickNow 1.6s ease-in-out infinite}
+.imm .trail .tick.t-now b{color:#FF6A1F}
+@keyframes tickNow{0%,100%{box-shadow:0 0 0 4px rgba(255,135,49,.7)}50%{box-shadow:0 0 0 12px rgba(255,135,49,.15)}}
+.imm .trail .tick em{top:30px;font-size:14px;color:#fff;text-shadow:0 1px 8px rgba(3,9,27,.8)}
+.imm .trail .tick:last-of-type em{transform:translateX(-50%)}
+.imm .trail .goal{position:absolute;right:-26px;top:50%;width:52px;height:52px;margin-top:-26px;border-radius:50%;display:grid;place-items:center;background:#03091B;color:#FFC070;box-shadow:0 0 0 3px #FFC070;z-index:2}
+.imm .trail .goal .i{width:24px;height:24px}
+.imm .trail .goal.won{background:linear-gradient(135deg,#FF6A1F,#FFC070);color:#03091B;animation:tickNow 1.6s ease-in-out infinite}
+/* mascotte che cammina sulla barra fino al punto raggiunto */
+.imm .mascot-walk{position:absolute;bottom:2px;left:clamp(56px,var(--w),calc(100% - 56px));transform:translateX(-50%);display:grid;justify-items:center;pointer-events:none;z-index:3}
+.imm .mascot-walk img{width:96px;height:auto;filter:drop-shadow(0 10px 14px rgba(3,9,27,.45));transform-origin:50% 100%;animation:mascotHop .9s ease-in-out infinite}
+@keyframes mascotHop{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+.imm .mascot-walk .say{position:relative;margin-bottom:10px;padding:9px 16px;border-radius:16px;background:#fff;color:#03091B;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:0 10px 24px rgba(3,9,27,.35);animation:sayBob 2.4s ease-in-out infinite}
+.imm .mascot-walk .say::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:14px;margin-left:-7px;background:#fff;transform:rotate(45deg);border-radius:2px}
+@keyframes sayBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* pulsante Inizia / Riprendi vivo, come la freccia */
+.imm .btn-live{position:relative;color:#fff;background:linear-gradient(90deg,#FF3B2F,#FF6A1F 25%,#FF9A3C 50%,#FFC070 60%,#FF9A3C 75%,#FF6A1F);background-size:200% 100%;
+  animation:cueGrad 2.6s ease-in-out infinite alternate,liveGlow 2s ease-out infinite;box-shadow:0 14px 34px rgba(255,90,31,.45)}
+.imm .btn-live small{color:#fff;opacity:.9}
+.imm .btn-live .play-dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#FF5A1F;animation:playPulse 1.6s ease-in-out infinite}
+.imm .btn-live .play-dot .i-play{width:16px;height:16px;margin-left:2px}
+.imm .btn-live>.i:last-child{width:22px;height:22px;stroke-width:2.6;animation:arrowNudge 1.4s ease-in-out infinite}
+@keyframes liveGlow{0%{box-shadow:0 14px 34px rgba(255,90,31,.45),0 0 0 0 rgba(255,135,49,.55)}100%{box-shadow:0 14px 34px rgba(255,90,31,.45),0 0 0 18px rgba(255,135,49,0)}}
+@keyframes playPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes arrowNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+.imm .btn-live:hover{filter:brightness(1.08);transform:translateY(-2px)}
+
+@media (max-width:860px){
+  .imm .trail{padding-top:118px;margin-bottom:22px}
+  .imm .trail .tick{width:28px;height:28px;margin:-14px 0 0 -14px}
+  .imm .trail .tick b{font-size:12px}
+  .imm .trail .tick .i{width:16px;height:16px}
+  .imm .trail .goal{width:38px;height:38px;margin-top:-19px;right:-14px}
+  .imm .mascot-walk img{width:70px}
+  .imm .mascot-walk{left:clamp(30px,var(--w),calc(100% - 40px))}
+  .imm .mascot-walk.at-start .say{transform:translateX(40%);animation:none}
+  .imm .mascot-walk.at-start .say::after{left:22%}
+  .imm .mascot-walk.at-end .say{transform:translateX(-30%);animation:none}
+  .imm .mascot-walk.at-end .say::after{left:78%}
+  .imm .mascot-walk .say{font-size:13px;padding:7px 12px}
+  .imm .btn-live>.i:last-child{display:none}
+}
+@media (max-height:760px){.imm .trail{padding-top:120px}.imm .mascot-walk img{width:76px}}
+
+/* overflow-x:hidden sul contenitore lo trasformava in area di scorrimento e bloccava gli elementi "sticky" (barra della Home, barra della lezione) */
+.imm{overflow-x:clip}
