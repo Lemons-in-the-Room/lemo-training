@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '../LanguageContext';
 import { supabase } from '../utils/supabase';
@@ -8,36 +8,79 @@ import { LangMenu } from '../Layout';
 import '../styles/immersive.css';
 import '../styles/immersive-extra.css';
 
-const OTHER = '__other__';
+const norm = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ');
 
-// Elenco da tabella catalog_options (solo voci approvate) + "Altro"
-function Pick({ label, kind, value, onChange, placeholder, options, otherLabel, otherPh }) {
-  const known = options.includes(value);
-  const [mode, setMode] = useState(value && !known ? OTHER : value || '');
-  return (
-    <div className="fld">
-      <span>{label}</span>
-      <div className="sel">
-        <select
-          value={mode}
-          onChange={(e) => { const v = e.target.value; setMode(v); onChange(v === OTHER ? '' : v); }}
-          aria-label={label} required data-kind={kind}
-        >
-          <option value="" disabled>{placeholder}</option>
-          {options.map((o) => <option key={o} value={o}>{o}</option>)}
-          <option value={OTHER}>{otherLabel}</option>
-        </select>
-        <Ico n="down" />
+// Campo con ricerca: si scrive, si sceglie dall'elenco; se manca si usa quello scritto (finisce "da approvare" in Admin).
+function Search({ label, items, value, onChange, placeholder, A, id }) {
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(0);
+  const boxRef = useRef(null);
+  const listRef = useRef(null);
+  const results = useMemo(() => {
+    const toks = norm(q).split(' ').filter(Boolean);
+    if (!toks.length) return items.slice(0, 50);
+    const out = [];
+    for (const it of items) {
+      if (toks.every((t) => it.k.includes(t))) { out.push(it); if (out.length >= 50) break; }
+    }
+    return out;
+  }, [q, items]);
+  const typed = q.trim();
+  const showTyped = typed.length >= 2 && !results.some((r) => norm(r.v) === norm(typed));
+  const options = [...results.map((r) => ({ ...r, kind: 'item' })), ...(showTyped ? [{ v: typed, kind: 'typed' }] : [])];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (e) => { if (!boxRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [open]);
+  useEffect(() => { listRef.current?.querySelector('[aria-selected=true]')?.scrollIntoView({ block: 'nearest' }); }, [hi]);
+
+  const pick = (o) => { onChange(o.v, o.kind === 'typed'); setQ(''); setOpen(false); };
+  const onKey = (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setHi((h) => Math.min(h + 1, options.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)); }
+    else if (e.key === 'Enter' && open && options[hi]) { e.preventDefault(); pick(options[hi]); }
+    else if (e.key === 'Escape') setOpen(false);
+  };
+
+  if (value.v) {
+    return (
+      <div className="fld"><span>{label}</span>
+        <div className="picked">
+          <div><b>{value.v}</b>{value.typed && <em>{A.typed}</em>}</div>
+          <button type="button" className="link" onClick={() => onChange('', false)}>{A.change}</button>
+        </div>
       </div>
-      {mode === OTHER && (
-        <input autoFocus required minLength={2} maxLength={120} value={value} onChange={(e) => onChange(e.target.value)} placeholder={otherPh} aria-label={`${label}: ${otherLabel}`} />
-      )}
+    );
+  }
+  return (
+    <div className="fld" ref={boxRef}>
+      <label htmlFor={id}>{label}</label>
+      <div className="combo">
+        <input id={id} role="combobox" aria-expanded={open} aria-controls={`${id}-l`} aria-autocomplete="list" autoComplete="off"
+          value={q} placeholder={placeholder} required
+          onChange={(e) => { setQ(e.target.value); setOpen(true); setHi(0); }} onFocus={() => setOpen(true)} onKeyDown={onKey} />
+        <Ico n="down" />
+        {open && options.length > 0 && (
+          <ul className="combo-list" role="listbox" id={`${id}-l`} ref={listRef}>
+            {options.map((o, k) => (
+              <li key={o.kind + o.v} role="option" aria-selected={k === hi} className={o.kind === 'typed' ? 'typed' : ''}
+                onPointerDown={(e) => { e.preventDefault(); pick(o); }} onPointerEnter={() => setHi(k)}>
+                {o.kind === 'typed' ? fmt(A.useTyped, { q: o.v }) : <><b>{o.n}</b>{o.sub && <span>{o.sub}</span>}</>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function Access() {
-  const { t, u } = useLang();
+  const { t, u, lang } = useLang();
   const w = t.welcome;
   const A = u.access;
   const navigate = useNavigate();
@@ -46,8 +89,11 @@ export default function Access() {
   const [msg, setMsg] = useState({ text: '', ok: false });
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [f, setF] = useState({ email: '', password: '', firstName: '', lastName: '', phone: '', hospital: '', department: '', patientType: '' });
+  const [f, setF] = useState({ email: '', password: '', firstName: '', lastName: '', phone: '', patientType: '' });
+  const [hosp, setHosp] = useState({ v: '', typed: false });
+  const [dep, setDep] = useState({ v: '', typed: false });
   const [lists, setLists] = useState({ hospital: [], department: [] });
+  const [official, setOfficial] = useState([]);
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: typeof e === 'string' ? e : e.target.value }));
 
   useEffect(() => {
@@ -57,6 +103,8 @@ export default function Access() {
       if (!alive || !data) return;
       setLists({ hospital: data.filter((r) => r.kind === 'hospital').map((r) => r.name), department: data.filter((r) => r.kind === 'department').map((r) => r.name) });
     });
+    // elenchi ufficiali: Italia (Ministero della Salute 2023) e Spagna (Catálogo Nacional de Hospitales 2025)
+    fetch('/ospedali.json').then((r) => r.json()).then((d) => { if (alive) setOfficial(d); }).catch(() => {});
     return () => { alive = false; };
   }, [navigate]);
 
@@ -77,12 +125,24 @@ export default function Access() {
     setLoading(true); setMsg({ text: '' });
     const { data, error } = await supabase.auth.signUp({
       email: f.email.trim(), password: f.password,
-      options: { data: { first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: f.hospital.trim(), department: f.department.trim(), patient_type: f.patientType } },
+      options: { data: { first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: hosp.v.trim(), department: dep.v.trim(), hospital_custom: hosp.typed, department_custom: dep.typed, patient_type: f.patientType } },
     });
     if (error) { setMsg({ text: /already/i.test(error.message) ? A.errExists : A.errRegister }); setLoading(false); return; }
     if (!data?.session) { setMsg({ text: A.confirmMail, ok: true }); setLoading(false); return; }
     navigate('/home');
   };
+
+  const hospitalItems = useMemo(() => {
+    const home = lang === 'es' ? 'ES' : 'IT'; // prima gli ospedali del paese della lingua scelta
+    const off = official.map((o) => {
+      const x = o.x || 'IT';
+      const sub = x === 'ES' ? `${o.c}, ${o.p} · España` : `${o.c} (${o.p})`;
+      return { v: `${o.n} — ${sub}`, n: o.n, sub, x, k: norm(`${o.n} ${o.c} ${o.p} ${o.a || ''} ${x === 'ES' ? 'spagna espana spain' : ''}`) };
+    }).sort((a, b) => (a.x === home ? 0 : 1) - (b.x === home ? 0 : 1));
+    const extra = lists.hospital.map((h) => ({ v: h, n: h, sub: '', k: norm(h) }));
+    return [...extra, ...off];
+  }, [official, lists.hospital, lang]);
+  const deptItems = useMemo(() => lists.department.map((d) => ({ v: d, n: d, sub: '', k: norm(d) })), [lists.department]);
 
   const forgot = async () => {
     if (!f.email.trim()) { setMsg({ text: A.needEmail }); return; }
@@ -145,8 +205,8 @@ export default function Access() {
                 </>
               ) : (
                 <>
-                  <Pick label={w.hospital} kind="hospital" value={f.hospital} onChange={set('hospital')} placeholder={A.pickHospital} options={lists.hospital} otherLabel={A.other} otherPh={A.otherPh} />
-                  <Pick label={w.department} kind="department" value={f.department} onChange={set('department')} placeholder={A.pickDept} options={lists.department} otherLabel={A.other} otherPh={A.otherPh} />
+                  <Search id="f-hosp" label={w.hospital} items={hospitalItems} value={hosp} onChange={(v, typed) => setHosp({ v, typed })} placeholder={A.searchHospital} A={A} />
+                  <Search id="f-dep" label={w.department} items={deptItems} value={dep} onChange={(v, typed) => setDep({ v, typed })} placeholder={A.searchDept} A={A} />
                   <div className="fld"><span>{w.patientProfile}</span>
                     <div className="seg2" role="radiogroup" aria-label={w.patientProfile}>
                       {[['adulti', w.adulti], ['pediatria', w.pediatria]].map(([v, l]) => (
@@ -157,7 +217,7 @@ export default function Access() {
                   {msg.text && <p className={msg.ok ? 'form-ok' : 'form-err'} role="alert">{msg.text}</p>}
                   <div className="acc-row">
                     <button type="button" className="btn btn-line" onClick={() => setStep(1)}><Ico n="back" /> {A.back}</button>
-                    <button className="btn btn-accent big" disabled={loading || !f.hospital.trim() || !f.department.trim() || !f.patientType}>{loading ? '…' : A.create} <Ico n="arrow" /></button>
+                    <button className="btn btn-accent big" disabled={loading || !hosp.v.trim() || !dep.v.trim() || !f.patientType}>{loading ? '…' : A.create} <Ico n="arrow" /></button>
                   </div>
                 </>
               )}

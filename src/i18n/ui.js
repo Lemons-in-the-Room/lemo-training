@@ -75,6 +75,7 @@ export const ui = {
       confirmMail: "Registrazione completata. Controlla la tua email per confermare l'account, poi accedi.",
       needEmail: 'Inserisci la tua email qui sopra.', resetSent: 'Ti abbiamo mandato una mail per reimpostare la password.', resetErr: 'Errore invio email.',
       pwdHint: 'Almeno 6 caratteri',
+      searchHospital: 'Cerca per nome o città', searchDept: 'Cerca il reparto', useTyped: 'Non lo trovo, usa «{q}»', typed: 'Scritto da te: lo verifichiamo noi', change: 'Cambia',
     },
   },
 
@@ -148,6 +149,7 @@ export const ui = {
       confirmMail: 'Sign-up complete. Check your email to confirm your account, then log in.',
       needEmail: 'Enter your email above.', resetSent: 'We sent you an email to reset your password.', resetErr: 'Could not send the email.',
       pwdHint: 'At least 6 characters',
+      searchHospital: 'Search by name or city', searchDept: 'Search your ward', useTyped: "I can't find it, use «{q}»", typed: 'Typed by you: we will check it', change: 'Change',
     },
   },
 
@@ -221,6 +223,7 @@ export const ui = {
       confirmMail: 'Registro completado. Revisa tu email para confirmar la cuenta y luego entra.',
       needEmail: 'Escribe tu email arriba.', resetSent: 'Te hemos enviado un email para restablecer la contraseña.', resetErr: 'Error al enviar el email.',
       pwdHint: 'Al menos 6 caracteres',
+      searchHospital: 'Busca por nombre o ciudad', searchDept: 'Busca el servicio', useTyped: 'No lo encuentro, usar «{q}»', typed: 'Escrito por ti: lo revisaremos', change: 'Cambiar',
     },
   },
 };
