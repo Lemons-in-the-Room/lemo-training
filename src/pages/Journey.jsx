@@ -22,6 +22,13 @@ export default function Journey() {
   useEffect(() => {
     const vai = params.get('vai');
     if (!vai) return undefined;
+    // "tappa": di ritorno da una lezione si arriva subito sulla tappa successiva, senza discesa
+    if (vai === 'tappa') {
+      const jump = () => { const el = document.querySelector(`[data-stop="${currentStop}"] .node`); if (el) { const r = el.getBoundingClientRect(); window.scrollTo({ top: window.scrollY + r.top + r.height / 2 - innerHeight * 0.5, behavior: 'instant' }); } };
+      jump(); const t1 = setTimeout(jump, 120); const t2 = setTimeout(jump, 600);
+      setParams({}, { replace: true });
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }
     const tm = setTimeout(() => { glideToStop(vai === 'traguardo' ? total + 1 : currentStop); setParams({}, { replace: true }); }, 700);
     return () => clearTimeout(tm);
     // eslint-disable-next-line react-hooks/exhaustive-deps

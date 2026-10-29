@@ -153,3 +153,25 @@
 .imm .watch-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(255,135,49,.55),var(--accent));border-radius:inherit;transition:width .4s var(--ease)}
 .imm .watch-bar span{position:relative;display:block;padding:0 14px;line-height:30px;font-size:13px;font-weight:700;color:#fff}
 .imm .finish .btn:disabled{background:rgba(255,255,255,.12);color:var(--ink-2);opacity:1}
+
+/* LEZIONE v2: video subito in alto, barra con il pulsante che diventa "Completa la tappa" */
+.imm .lesson-v2{padding-top:96px}
+.imm .lesson-bar{position:sticky;top:64px;z-index:30;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 0 16px;margin-bottom:6px}
+.imm .lesson-bar::before{content:"";position:absolute;z-index:-1;inset:0 -100vw;background:linear-gradient(180deg,rgba(3,9,27,.82),rgba(3,9,27,.55) 70%,rgba(3,9,27,0))}
+.imm .lesson-id{min-width:0;flex:1}
+.imm .lesson-id h1{font-size:clamp(26px,2.6vw,38px);line-height:1.05;margin-top:4px}
+.imm .lesson-act{flex:none}
+.imm .lesson-act.ready{animation:readyPop .6s var(--spring),readyGlow 2s ease-out .6s infinite}
+@keyframes readyPop{from{transform:scale(.85);opacity:0}}
+@keyframes readyGlow{0%{box-shadow:0 0 0 0 rgba(255,135,49,.6)}100%{box-shadow:0 0 0 18px rgba(255,135,49,0)}}
+.imm .lesson-bar .watch-bar{flex:0 1 260px;margin-left:auto}
+.imm .lesson-v2 .player{opacity:1;transform:none}
+.imm .lesson-v2 .no-skip{margin-top:14px}
+@media (max-width:860px){
+  .imm .lesson-v2{padding-top:72px}
+  .imm .lesson-bar{top:56px;gap:10px;padding:10px 0 12px}
+  .imm .lesson-id{order:-1;flex-basis:100%}
+  .imm .lesson-id h1{font-size:26px}
+  .imm .lesson-act{flex:1;justify-content:center}
+  .imm .lesson-bar .watch-bar{flex:1 1 100%;margin:0;max-width:none}
+}

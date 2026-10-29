@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useLang } from '../LanguageContext';
 import { useAccount } from '../account';
 import { fmt } from '../i18n/ui';
-import { Cue, Ico, IMG, Split, World, useReveal } from '../imm/kit';
+import { Ico, IMG, World, useReveal } from '../imm/kit';
 
 const md = (t) => String(t ?? '').split(/\*\*(.+?)\*\*/g).map((part, k) => (k % 2 ? <b key={k}>{part}</b> : part));
 
@@ -67,27 +67,32 @@ export default function LessonPage() {
 
   const complete = async () => {
     await acc.completeLesson(m.id);
-    navigate('/formazione?vai=riprendi');
+    navigate('/formazione?vai=tappa');
   };
+  const showComplete = !done && canComplete;
 
   return (
     <>
-      <World scenes={[
-        { src: IMG.meadow, dim: 0.25 },
-        { src: IMG.meadowBlur, at: '.lesson', offset: -0.4, dim: 0.62 },
-      ]} deps={[i]} />
-      <section className="scene hero short lesson-hero">
-        <div className="hero-in">
-          <Link className="back" to="/formazione"><Ico n="back" /> {L.back}</Link>
-          <p className="kicker">{fmt(L.kicker, { i: i + 1, n: acc.total, m: m.min })}</p>
-          <Split words={[m.title]} />
-          <p className="lead">{m.desc}</p>
+      <World scenes={[{ src: IMG.meadowBlur, dim: 0.55 }]} deps={[i]} />
+      <section className="lesson lesson-v2">
+        <div className="lesson-bar">
+          {showComplete ? (
+            <button type="button" className="btn btn-accent lesson-act ready" onClick={complete}>
+              <Ico n="check" /> {last ? L.complete : L.completeNext}
+            </button>
+          ) : (
+            <Link className="btn btn-line lesson-act" to="/formazione?vai=tappa"><Ico n="back" /> {L.back}</Link>
+          )}
+          <div className="lesson-id">
+            <p className="kicker">{fmt(L.kicker, { i: i + 1, n: acc.total, m: m.min })}</p>
+            <h1>{m.title}</h1>
+          </div>
+          {!done && !canComplete && (
+            <div className="watch-bar" aria-label={fmt(L.watched, { p: pct })}><i style={{ width: `${pct}%` }} /><span>{fmt(L.watched, { p: pct })}</span></div>
+          )}
         </div>
-        <Cue label={u.cue.watch} />
-      </section>
-      <section className="lesson">
         <Player src={m.video} title={m.title} sub={fmt(L.watch, { m: m.min })} locked={!done} storeKey={`lemo_seen_${uid}_${m.id}`} onProgress={onMain} />
-        {!done && <p className="no-skip rv"><Ico n="clock" /> {L.noSkip}</p>}
+        {!done && !canComplete && <p className="no-skip"><Ico n="lock" /> {L.mustWatch}. {L.noSkip}</p>}
         {acc.usesTablet && m.tablet && (
           <>
             <h2 className="sec rv">{L.tablet}</h2>
@@ -99,21 +104,6 @@ export default function LessonPage() {
           {m.slides.map((s, k) => (
             <article key={k} className="key rv"><span className="kn">{k + 1}</span><div><h3>{s.title}</h3><p>{md(s.content)}</p></div></article>
           ))}
-        </div>
-        <div className="finish rv">
-          {done ? (
-            <><p>{L.doneAlready}</p><Link className="btn btn-line big" to="/formazione?vai=riprendi"><Ico n="back" /> {L.backJourney}</Link></>
-          ) : (
-            <>
-              <div className="finish-txt">
-                <p>{canComplete ? L.ask : L.mustWatch}</p>
-                {!canComplete && <div className="watch-bar" aria-label={fmt(L.watched, { p: pct })}><i style={{ width: `${pct}%` }} /><span>{fmt(L.watched, { p: pct })}</span></div>}
-              </div>
-              <button type="button" className="btn btn-accent big" disabled={!canComplete} onClick={complete}>
-                {canComplete ? <Ico n="check" /> : <Ico n="lock" />} {last ? L.complete : L.completeNext}
-              </button>
-            </>
-          )}
         </div>
       </section>
     </>
