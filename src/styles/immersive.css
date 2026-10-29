@@ -110,11 +110,6 @@
 .imm .fab{bottom:calc(92px + env(safe-area-inset-bottom));right:16px;width:54px;height:54px}
 .imm .chat{right:8px;left:8px;width:auto;bottom:calc(84px + env(safe-area-inset-bottom));height:min(520px,calc(100dvh - 120px))}
 }
-@media (prefers-reduced-motion:reduce){
-.imm, .imm *,.imm *::before,.imm *::after{animation:none!important;transition:none!important}
-.imm .rv{opacity:1;transform:none}
-.imm .segs i.done::after{transform:none}
-}
 .imm .chat[hidden]{display:none}
 .imm{--ground:#03091B;--surface:#0B1330;--surface-2:#131D40;--step:#1E2A55;--ink:#FFFFFF;--ink-2:#B7BCD3;--accent:#FF8731;--on-accent:#03091B;--done:#3FC48C;--bad:#FFB3A3;--bad-bg:#3A1A22;--focus:#FFB27A;--m:clamp(20px,4vw,64px);--r:24px;--card:rgba(6,12,34,.86)}
 .imm{overflow-x:hidden;font-size:18px;background:#03091B}
@@ -326,8 +321,8 @@
 .imm .cue-o b{display:grid;line-height:0;animation:cueDrop 1.5s cubic-bezier(.45,0,.2,1) infinite}
 .imm .cue-o .i{width:24px;height:24px;stroke-width:2.6}
 .imm .cue-o .i+.i{margin-top:-14px;opacity:.55}
-.imm .cue-o .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,135,49,.9);animation:cueRing 2s ease-out infinite}
-.imm .cue-o .ring.r2{animation-delay:1s}
+.imm .cue-o .halo{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,135,49,.9);animation:cueRing 2s ease-out infinite}
+.imm .cue-o .halo.h2{animation-delay:1s}
 @keyframes cueDrop{0%{transform:translateY(-7px);opacity:0}30%{opacity:1}70%{transform:translateY(6px);opacity:1}100%{transform:translateY(10px);opacity:0}}
 @keyframes cueRing{from{transform:scale(1);opacity:.9}to{transform:scale(1.9);opacity:0}}
 .imm .cue-l{animation:cueText 2s ease-in-out infinite}

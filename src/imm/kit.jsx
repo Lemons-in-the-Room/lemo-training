@@ -64,7 +64,7 @@ export function Cue({ label, onClick }) {
     <a className="cue" href="#" aria-label={label}
       onClick={(e) => { e.preventDefault(); if (onClick) onClick(e); else glideToNextSection(e.currentTarget); }}>
       <span className="cue-l">{label}</span>
-      <span className="cue-o"><i className="ring" /><i className="ring r2" /><b><Ico n="down" /><Ico n="down" /></b></span>
+      <span className="cue-o"><i className="halo" /><i className="halo h2" /><b><Ico n="down" /><Ico n="down" /></b></span>
     </a>
   );
 }
