@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { QRCodeCanvas } from 'qrcode.react';
 import { supabase } from './utils/supabase';
 import KnowledgeSection from './components/KnowledgeSection';
+import CatalogSection from './components/CatalogSection';
 
 const MODULE_NAMES = {
   1: 'Kit & Postazione', 2: 'Accensione & Stand-by', 3: 'Posizionamento & Ricarica',
@@ -228,6 +229,9 @@ const Admin = () => {
           lastLogin: u.last_login,
           completedModulesList: u.completed_modules || [],
           newsletterOptIn: u.newsletter_opt_in,
+          quizPassedAt: u.final_quiz_passed_at,
+          quizBest: u.final_quiz_best_score,
+          usesTablet: !!u.uses_tablet,
         }))
       : Object.values(JSON.parse(localStorage.getItem('lemo_all_users')) || {}).map(u => ({
           ...u,
@@ -405,7 +409,7 @@ const Admin = () => {
       'Reset Progress',
       `Reset the training progress for "${userName}"? The user will be taken back to Module 1 but will keep their account.`,
       async () => {
-        await supabase.from('users').update({ completed_modules: [] }).eq('id', u.id);
+        await supabase.from('users').update({ completed_modules: [], final_quiz_passed_at: null, final_quiz_best_score: null }).eq('id', u.id);
         localStorage.removeItem(`lemo_progress_${userName}`);
         const globalUsers = JSON.parse(localStorage.getItem('lemo_all_users')) || {};
         if (globalUsers[userName]) {
@@ -895,6 +899,12 @@ const Admin = () => {
                             <div className="h-2 bg-slate-800 rounded-full overflow-hidden w-full max-w-[150px]">
                               <div className={`h-full rounded-full transition-all duration-1000 ${u.percentage === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#FF8731]'}`} style={{ width: `${u.percentage || 0}%` }}></div>
                             </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {u.quizPassedAt
+                                ? <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-bold">Certificato{u.quizBest ? ` · ${u.quizBest} giuste` : ''}</span>
+                                : u.quizBest != null ? <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-bold">Verifica: miglior {u.quizBest}</span> : null}
+                              {u.usesTablet && <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[11px] font-bold">Tablet</span>}
+                            </div>
                           </div>
                         </td>
                         <td className="px-8 py-6 text-center">
@@ -1052,6 +1062,7 @@ const Admin = () => {
         </div>
 
         {/* Email & Newsletter Section */}
+        <CatalogSection />
         <KnowledgeSection />
 
         <EmailSection allUsers={allUsersList} />

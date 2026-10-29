@@ -5,3 +5,5 @@ dist/
 .vercel
 public/videos/
 supabase-credentials.txt
+
+.design/

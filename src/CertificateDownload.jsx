@@ -1,19 +1,19 @@
 import { useState } from 'react';
-import { Award } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { audio } from './utils/audio';
 import { useLang } from './LanguageContext';
+import { Ico } from './imm/kit';
 
-const CertificateDownload = ({ user }) => {
+// Pulsante + modello del certificato (PDF generato nel browser).
+// date = giorno in cui è stata superata la verifica finale.
+const CertificateDownload = ({ user, date, className = 'btn btn-accent big', label }) => {
   const { t } = useLang();
   const h = t.home;
   const [loading, setLoading] = useState(false);
+  const [now] = useState(() => Date.now());
 
-  const certificateCode = `LMR-${new Date().getFullYear()}-${String(user?.name || '').length * 137 % 9000 + 1000}`;
-  const certificateDate = new Date().toLocaleDateString('it-IT');
+  const certificateCode = `LMR-${new Date(date || now).getFullYear()}-${String(user?.name || '').length * 137 % 9000 + 1000}`;
+  const certificateDate = new Date(date || now).toLocaleDateString('it-IT');
 
   const download = async () => {
-    audio.playSuccess();
     setLoading(true);
     const element = document.getElementById('certificate-template-shared');
     element.style.display = 'block';
@@ -32,20 +32,9 @@ const CertificateDownload = ({ user }) => {
 
   return (
     <>
-      <motion.button
-        whileHover={{ scale: 1.025, y: -1 }} whileTap={{ scale: 0.97 }}
-        onClick={download}
-        disabled={loading}
-        className="group relative inline-flex items-center gap-3 px-7 py-4 lg:px-8 lg:py-5 rounded-2xl lg:rounded-[1.75rem] font-bold text-white text-[15px] lg:text-[16px] tracking-tight overflow-hidden disabled:opacity-70"
-        style={{
-          background: 'linear-gradient(90deg, #FF8731 0%, #FF9E54 100%)',
-          boxShadow: '0 18px 40px -10px rgba(255,135,49,0.65), inset 0 1px 0 rgba(255,255,255,0.35)',
-        }}
-      >
-        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 pointer-events-none" />
-        <Award className="w-4 h-4 relative z-10" />
-        <span className="relative z-10">{loading ? '...' : h.getCert}</span>
-      </motion.button>
+      <button type="button" className={className} onClick={download} disabled={loading} aria-busy={loading}>
+        <Ico n="award" /> {loading ? '…' : (label || h.getCert)}
+      </button>
 
       {/* Hidden certificate template */}
       <div style={{ position: 'fixed', left: '-9999px', top: '-9999px' }}>

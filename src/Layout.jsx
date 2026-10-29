@@ -1,302 +1,144 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { NavLink, Outlet, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { Home, BookOpen, LifeBuoy, LogOut, Globe, ShieldCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeContext } from './ThemeContext';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useLang } from './LanguageContext';
-import { audio } from './utils/audio';
 import { supabase } from './utils/supabase';
+import { AccountProvider, useAccount } from './account';
 import ChatWidget from './components/ChatWidget';
+import { Ico, IMG } from './imm/kit';
+import './styles/immersive.css';
+import './styles/immersive-extra.css';
 
-const LANGUAGES = [
-  { code: 'it', label: 'Italiano', flag: 'https://flagcdn.com/w40/it.png' },
-  { code: 'en', label: 'English',  flag: 'https://flagcdn.com/w40/gb.png' },
-  { code: 'es', label: 'Español',  flag: 'https://flagcdn.com/w40/es.png' },
+const LANGS = [
+  { code: 'it', label: 'Italiano' },
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
 ];
 
-const LangPicker = ({ isHome, isDarkMode }) => {
-  const { lang, switchLang } = useLang();
+export function LangMenu({ up = false, compact = false }) {
+  const { lang, switchLang, u } = useLang();
   const [open, setOpen] = useState(false);
-  const current = LANGUAGES.find(l => l.code === lang);
-
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', close); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', esc); };
+  }, [open]);
   return (
-    <div className="relative">
-      <button
-        onClick={() => { audio.playClick(); setOpen(o => !o); }}
-        className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-400 hover:text-white hover:bg-white/[0.07]"
-      >
-        <img src={current.flag} alt={current.label} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
-        <span className="text-base 2xl:text-lg">{current.label}</span>
+    <div className={`lang ${up ? 'up' : ''} ${compact ? 'compact' : ''}`} ref={ref}>
+      <button type="button" className="lang-btn" aria-haspopup="listbox" aria-expanded={open} aria-label={u.nav.lang} onClick={() => setOpen((o) => !o)}>
+        <Ico n="globe" /><span>{lang.toUpperCase()}</span>
       </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-full mb-2 left-0 right-0 bg-[#03091B]/90 backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-xl z-50"
-          >
-            {LANGUAGES.map(l => (
-              <button
-                key={l.code}
-                onClick={() => { audio.playClick(); switchLang(l.code); setOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 2xl:px-6 2xl:py-4 w-full text-left font-bold text-sm 2xl:text-base transition-all duration-200 ${lang === l.code ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
-              >
-                <img src={l.flag} alt={l.label} className="w-5 h-3.5 object-cover rounded-sm" />
-                <span>{l.label}</span>
+      {open && (
+        <ul className="lang-menu" role="listbox" aria-label={u.nav.lang}>
+          {LANGS.map((l) => (
+            <li key={l.code}>
+              <button type="button" role="option" aria-selected={lang === l.code} onClick={() => { switchLang(l.code); setOpen(false); }}>
+                <b>{l.code.toUpperCase()}</b><span>{l.label}</span>{lang === l.code && <Ico n="check" />}
               </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-};
+}
 
-const MobileLangPicker = ({ isDarkMode, inline }) => {
-  const { lang, switchLang } = useLang();
-  const [open, setOpen] = useState(false);
-  const current = LANGUAGES.find(l => l.code === lang);
+function Shell() {
+  const { u } = useLang();
+  const acc = useAccount();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const rootRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [askLogout, setAskLogout] = useState(false);
+  const onb = pathname.startsWith('/benvenuto');
 
-  return (
-    <div className="relative">
-      <button
-        onClick={() => { audio.playClick(); setOpen(o => !o); }}
-        className={inline
-          ? `flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl transition-all ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`
-          : `w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all text-lg ${isDarkMode ? 'bg-white/10 border-white/20' : 'bg-white/80 border-slate-200'}`
-        }
-      >
-        <img src={current.flag} alt={current.label} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
-        {inline && <span className="text-[9px] font-black uppercase tracking-widest">{current.code.toUpperCase()}</span>}
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-full mb-2 right-0 bg-[#03091B]/90 backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-xl z-50 min-w-[140px]"
-          >
-            {LANGUAGES.map(l => (
-              <button
-                key={l.code}
-                onClick={() => { audio.playClick(); switchLang(l.code); setOpen(false); }}
-                className={`flex items-center gap-3 px-4 py-3 w-full text-left font-bold text-sm transition-all duration-200 ${lang === l.code ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
-              >
-                <img src={l.flag} alt={l.label} className="w-5 h-3.5 object-cover rounded-sm" />
-                <span>{l.label}</span>
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
+  useEffect(() => {
+    let alive = true;
+    supabase.rpc('is_admin').then(({ data }) => { if (alive) setIsAdmin(data === true); });
+    return () => { alive = false; };
+  }, []);
 
-  const Layout = () => {
-    const [searchParams] = useSearchParams();
-    const mode = searchParams.get('mode') || 'guided';
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { isDarkMode } = useContext(ThemeContext);
-    const { t } = useLang();
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+  // accesso e primo accesso
+  useEffect(() => {
+    if (acc.status === 'anon') navigate('/', { replace: true });
+    else if (acc.needsOnboarding && !onb) navigate('/benvenuto', { replace: true });
+    else if (acc.status === 'ready' && !acc.needsOnboarding && onb) navigate('/home', { replace: true });
+  }, [acc.status, acc.needsOnboarding, onb, navigate]);
 
-    // Il pulsante admin compare solo se il database conferma il ruolo (funzione is_admin).
-    useEffect(() => {
-      let alive = true;
-      supabase.rpc('is_admin').then(({ data }) => { if (alive) setIsAdmin(data === true); });
-      return () => { alive = false; };
-    }, []);
+  // barra in alto più scura quando si scorre
+  useEffect(() => {
+    const el = rootRef.current;
+    const f = () => el?.classList.toggle('scrolled', window.scrollY > 30);
+    f(); addEventListener('scroll', f, { passive: true });
+    return () => removeEventListener('scroll', f);
+  }, []);
 
-  const isHome = location.pathname.includes('/home');
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
 
-  const navItems = [
-    { icon: Home,     label: t.nav.home,    path: `/home?mode=${mode}` },
-    { icon: BookOpen, label: t.nav.modules, path: `/modules?mode=${mode}` },
-    { icon: LifeBuoy, label: t.nav.support, path: `/support?mode=${mode}` },
-  ];
-
-  const handleLogoutClick = () => {
-    audio.playClick();
-    setShowLogoutConfirm(true);
-  };
-
-  const confirmLogout = async () => {
-    audio.playClick();
+  const logout = async () => {
     localStorage.removeItem('lemo_user');
     await supabase.auth.signOut();
     window.location.href = '/';
   };
 
-  const cancelLogout = () => {
-    audio.playClick();
-    setShowLogoutConfirm(false);
-  };
-
-  const handleNavClick = () => audio.playClick();
+  const nav = [
+    { to: '/home', label: u.nav.home, icon: 'home' },
+    { to: '/formazione', label: u.nav.training, icon: 'book', also: ['/verifica'] },
+    { to: '/supporto', label: u.nav.support, icon: 'help' },
+  ];
+  const isCurrent = (n) => pathname.startsWith(n.to) || (n.also || []).some((p) => pathname.startsWith(p));
 
   return (
-    <div className="font-sans md:flex md:h-[100dvh] md:overflow-hidden">
-      {/* Logout Confirmation Modal */}
-      <AnimatePresence>
-        {showLogoutConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-[#040F2A] border border-white/10 p-6 rounded-3xl max-w-sm w-full shadow-2xl"
-            >
-              <h3 className="text-xl font-bold text-white mb-2 text-center">Sei sicuro di voler uscire?</h3>
-              <p className="text-slate-400 text-sm text-center mb-6">Dovrai inserire nuovamente le tue credenziali per rientrare nella piattaforma.</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelLogout}
-                  className="flex-1 py-3 px-4 rounded-xl text-slate-300 font-bold bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  Annulla
-                </button>
-                <button
-                  onClick={confirmLogout}
-                  className="flex-1 py-3 px-4 rounded-xl text-white font-bold bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
-                >
-                  Sì, esci
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Background fisso solo per le pagine interne */}
-      <div className="fixed inset-0 -z-10 md:hidden" style={{ background: '#03091B' }} />
-      <div className="fixed inset-0 -z-10 hidden md:block bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/images/bg-pc.webp')" }} />
-
-      {/* Sidebar Desktop */}
-      <motion.aside
-        initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="hidden md:flex flex-col w-64 2xl:w-80 m-4 2xl:m-6 rounded-[2rem] 2xl:rounded-[3rem] shadow-[0_40px_100px_-10px_rgba(3,9,27,0.7)] relative z-50 overflow-hidden bg-[#040F2A]/80 backdrop-blur-[40px] border border-white/[0.10]"
-      >
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-        <div className="absolute top-[-50px] left-[-50px] w-[200px] h-[200px] bg-[#FF8731] rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
-
-        <div className="p-4 2xl:p-10 flex items-center justify-center border-b shrink-0 border-white/[0.08]">
-          <img src="/images/logos/logo esteso bianco png.png" alt="Lemons in the room Logo" className="h-8 2xl:h-16 w-auto object-contain drop-shadow-md"
-            onError={(e) => { e.target.src = '/images/logos/logo esteso nero png.png'; }} />
-        </div>
-
-        <nav className="flex-1 min-h-0 px-4 py-4 2xl:px-6 2xl:py-6 overflow-y-auto space-y-1 2xl:space-y-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.path}
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 2xl:gap-5 2xl:px-6 2xl:py-5 rounded-[1.5rem] 2xl:rounded-[2rem] font-bold transition-all duration-300 relative group overflow-hidden shrink-0 ${
-                  isActive ? 'text-white shadow-[0_20px_40px_-10px_rgba(255,135,49,0.5)] scale-[1.02]' :
-                  'text-slate-400 hover:text-white hover:bg-white/[0.07]'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && <motion.div layoutId="activeNav" className="absolute inset-0 bg-gradient-to-r from-[#FF8731] to-[#FF9E54] z-0" />}
-                  <item.icon className={`w-5 h-5 2xl:w-6 2xl:h-6 relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  <span className="relative z-10 text-base 2xl:text-lg tracking-wide">{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
+    <div className={`imm ${onb ? 'onb-mode' : ''}`} ref={rootRef}>
+      <header className="top">
+        <NavLink className="brand" to="/home"><img src={IMG.logo} alt="Lemons in the Room" width="150" height="30" /></NavLink>
+        <nav className="links" aria-label="Menu">
+          {nav.map((n) => <NavLink key={n.to} to={n.to} aria-current={isCurrent(n) ? 'page' : undefined}>{n.label}</NavLink>)}
         </nav>
-
-        <div className="p-4 2xl:p-8 space-y-1 2xl:space-y-2 border-t border-white/[0.08] shrink-0">
-          <LangPicker isHome={isHome} isDarkMode={isDarkMode} />
-
-          {isAdmin && (
-            <NavLink to="/admin" onClick={handleNavClick} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-[#B39BFF] hover:text-white hover:bg-[#8756FA]/20">
-              <ShieldCheck className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:scale-110 transition-transform duration-300" />
-              <span className="text-base 2xl:text-lg">{t.nav.admin}</span>
-            </NavLink>
-          )}
-
-          <a href="https://www.lemonsintheroom.com/" target="_blank" rel="noopener noreferrer" onClick={() => audio.playClick()} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-400 hover:text-white hover:bg-white/[0.07]">
-            <Globe className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:rotate-12 transition-transform duration-500" />
-            <span className="text-base 2xl:text-lg">{t.nav.visitSite}</span>
-          </a>
-
-          <button onClick={handleLogoutClick} className="flex items-center gap-3 px-4 py-3 2xl:gap-4 2xl:px-6 2xl:py-5 w-full rounded-[1.5rem] 2xl:rounded-[2rem] transition-all duration-300 text-left font-bold group text-slate-500 hover:text-red-400 hover:bg-red-500/10">
-            <LogOut className="w-5 h-5 2xl:w-6 2xl:h-6 group-hover:-translate-x-1 transition-transform duration-300" />
-            <span className="text-base 2xl:text-lg">{t.nav.logout}</span>
-          </button>
+        <div className="tools">
+          {isAdmin && <a href="/admin" className="tool-admin" title={u.nav.admin}><Ico n="shield" /><span>{u.nav.admin}</span></a>}
+          <LangMenu />
+          <a href="https://www.lemonsintheroom.com" target="_blank" rel="noopener noreferrer" title={u.nav.site} aria-label={u.nav.site}><Ico n="site" /></a>
+          <button type="button" className="tool-btn" title={u.nav.logout} aria-label={u.nav.logout} onClick={() => setAskLogout(true)}><Ico n="out" /></button>
         </div>
-      </motion.aside>
+        <div className="top-mobile">
+          {isAdmin && <a href="/admin" className="tool-admin" aria-label={u.nav.admin}><Ico n="shield" /></a>}
+          <button type="button" className="tool-btn" aria-label={u.nav.logout} onClick={() => setAskLogout(true)}><Ico n="out" /></button>
+        </div>
+      </header>
 
-      {/* Mobile Top Actions */}
-      <div className="md:hidden fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
-        {isAdmin && (
-          <NavLink to="/admin" onClick={handleNavClick} aria-label={t.nav.admin} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-[#8756FA]/40 text-[#B39BFF] hover:text-white">
-            <ShieldCheck className="w-5 h-5" />
-          </NavLink>
-        )}
-        <a href="https://www.lemonsintheroom.com/" target="_blank" rel="noopener noreferrer" onClick={() => audio.playClick()} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-slate-400 hover:text-white">
-          <Globe className="w-5 h-5" />
-        </a>
-        <button onClick={handleLogoutClick} className="w-12 h-12 rounded-full backdrop-blur-2xl border flex items-center justify-center shadow-lg transition-all bg-[#040F2A]/80 border-white/[0.12] text-red-400 hover:text-red-300 hover:bg-red-500/10">
-          <LogOut className="w-5 h-5 ml-0.5" />
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <main className="md:flex-1 md:overflow-y-auto relative scroll-smooth bg-transparent pb-28 md:pb-0">
-        <div className="fixed top-[-20%] right-[-10%] w-[800px] h-[800px] bg-[#FF8731] rounded-full blur-[150px] opacity-20 pointer-events-none -z-10"></div>
-        <div className="fixed bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#8756FA] rounded-full blur-[120px] opacity-20 pointer-events-none -z-10"></div>
-        <Outlet />
+      <main id="view" key={pathname} className="enter">
+        {acc.status === 'ready' ? <Outlet /> : <div className="boot" aria-busy="true" />}
       </main>
 
-      <ChatWidget />
+      <nav className="tabbar" aria-label="Menu">
+        {nav.map((n) => (
+          <NavLink key={n.to} to={n.to} aria-current={isCurrent(n) ? 'page' : undefined}><Ico n={n.icon} /><span>{n.label}</span></NavLink>
+        ))}
+        <LangMenu up compact />
+      </nav>
 
-      {/* Bottom Nav Mobile */}
-      <div className="md:hidden fixed bottom-3 left-4 right-4 z-50">
-        <div className="backdrop-blur-[40px] border flex justify-around items-center p-2 rounded-[2.5rem] bg-[#040F2A]/85 border-white/[0.10] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.path}
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `flex flex-col items-center justify-center w-[4.5rem] h-[4.5rem] rounded-full transition-all duration-500 relative group overflow-hidden ${
-                  isActive ? 'text-white bg-gradient-to-br from-[#8756FA] to-[#FF8731] shadow-[0_10px_20px_rgba(255,135,49,0.5),inset_0_2px_4px_rgba(255,255,255,0.3)] z-10' :
-                  'text-slate-400 hover:text-white hover:bg-white/[0.07] border border-transparent'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon className={`w-6 h-6 mb-1 relative z-10 transition-transform duration-300 ${isActive ? 'drop-shadow-md scale-105' : 'group-hover:scale-110'}`} />
-                  <span className="text-[8px] font-black leading-none uppercase tracking-wide relative z-10 drop-shadow-sm truncate max-w-full px-1">{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
+      {!onb && acc.status === 'ready' && <ChatWidget />}
 
-          {/* Lingua come 4° voce */}
-          <MobileLangPicker isDarkMode={isDarkMode} inline />
+      {askLogout && (
+        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="lo-t" onClick={(e) => { if (e.target === e.currentTarget) setAskLogout(false); }}>
+          <div className="modal-card">
+            <h2 id="lo-t">{u.logout.title}</h2>
+            <p>{u.logout.text}</p>
+            <div className="modal-actions">
+              <button type="button" className="btn btn-line" onClick={() => setAskLogout(false)}>{u.logout.no}</button>
+              <button type="button" className="btn btn-accent" onClick={logout}><Ico n="out" /> {u.logout.yes}</button>
+            </div>
+          </div>
         </div>
-      </div>
-
+      )}
     </div>
   );
-};
-export default Layout;
+}
+
+export default function Layout() {
+  return <AccountProvider><Shell /></AccountProvider>;
+}
