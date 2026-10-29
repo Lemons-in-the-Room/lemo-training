@@ -271,3 +271,7 @@
 .imm .mascot-walk img,.imm .mascot-walk .say{animation:none}
 /* la barra lascia libero l'angolo della chat */
 @media (min-width:861px){.imm .prog-in{width:min(1240px,100% - 260px)}}
+
+/* nomi delle tappe più bassi: non toccano più il cerchio (anche con l'alone della tappa in corso) */
+.imm .trail .tick em{top:52px}
+@media (min-width:861px){.imm .trail{margin-bottom:58px}}
