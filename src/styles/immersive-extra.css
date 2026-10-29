@@ -144,3 +144,12 @@
 @keyframes lemonFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
 @media (max-width:860px){.imm .s-now .node .lemon{width:48px}}
 @media (prefers-reduced-motion:reduce){.imm .s-now .node .lemon{animation:none}}
+
+/* prima visione: niente salti in avanti */
+.imm .no-skip{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;font-weight:600;color:var(--ink-2)}
+.imm .no-skip .i{width:16px;height:16px;color:var(--accent)}
+.imm .finish-txt{display:grid;gap:12px;flex:1;min-width:240px}
+.imm .watch-bar{position:relative;height:30px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;max-width:420px}
+.imm .watch-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(255,135,49,.55),var(--accent));border-radius:inherit;transition:width .4s var(--ease)}
+.imm .watch-bar span{position:relative;display:block;padding:0 14px;line-height:30px;font-size:13px;font-weight:700;color:#fff}
+.imm .finish .btn:disabled{background:rgba(255,255,255,.12);color:var(--ink-2);opacity:1}

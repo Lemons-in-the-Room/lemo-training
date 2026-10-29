@@ -38,6 +38,7 @@ export const ui = {
       tablet: 'Con il tablet', keys: 'Punti chiave',
       doneAlready: 'Hai già completato questa tappa.', backJourney: 'Torna al percorso',
       ask: 'Hai visto il video e letto i punti chiave?', complete: 'Completa la tappa', completeNext: 'Completa la tappa e prosegui',
+      mustWatch: 'Guarda tutto il video per proseguire', watched: '{p}% del video visto', noSkip: 'La prima volta il video non si può mandare avanti.',
     },
     quiz: {
       title: ['Verifica', 'finale'],
@@ -112,6 +113,7 @@ export const ui = {
       tablet: 'With the tablet', keys: 'Key points',
       doneAlready: 'You have already completed this stage.', backJourney: 'Back to the journey',
       ask: 'Have you watched the video and read the key points?', complete: 'Complete the stage', completeNext: 'Complete the stage and continue',
+      mustWatch: 'Watch the whole video to continue', watched: '{p}% of the video watched', noSkip: 'The first time, the video cannot be skipped forward.',
     },
     quiz: {
       title: ['Final', 'test'],
@@ -186,6 +188,7 @@ export const ui = {
       tablet: 'Con la tablet', keys: 'Puntos clave',
       doneAlready: 'Ya has completado esta etapa.', backJourney: 'Volver al recorrido',
       ask: '¿Has visto el vídeo y leído los puntos clave?', complete: 'Completar la etapa', completeNext: 'Completar la etapa y seguir',
+      mustWatch: 'Mira el vídeo completo para continuar', watched: '{p}% del vídeo visto', noSkip: 'La primera vez el vídeo no se puede adelantar.',
     },
     quiz: {
       title: ['Prueba', 'final'],
