@@ -137,3 +137,10 @@
 .imm .picked b{display:block;color:#fff;font-weight:600;font-size:15px;line-height:1.35}
 .imm .picked em{display:block;font-style:normal;font-size:13px;color:#FFD2B0;margin-top:2px}
 .imm .picked .link{justify-self:auto;flex:none}
+
+/* tappa in corso: il limone di Lemons al posto del pallino col play (non sembra un pulsante) */
+.imm .s-now .node,.imm .stop.final.s-now .node{background:none;box-shadow:none;animation:none;overflow:visible}
+.imm .s-now .node .lemon{width:58px;height:auto;filter:drop-shadow(0 6px 16px rgba(3,9,27,.45)) drop-shadow(0 0 18px rgba(255,135,49,.35));animation:lemonFloat 3.2s ease-in-out infinite}
+@keyframes lemonFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+@media (max-width:860px){.imm .s-now .node .lemon{width:48px}}
+@media (prefers-reduced-motion:reduce){.imm .s-now .node .lemon{animation:none}}

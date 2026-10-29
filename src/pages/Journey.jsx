@@ -103,7 +103,7 @@ export default function Journey() {
             const s = acc.stopState(i);
             return (
               <li key={m.id} className={`stop s-${s} ${i % 2 ? 'right' : 'left'}`} data-stop={i}>
-                <span className="node">{s === 'done' ? <Ico n="check" /> : s === 'locked' ? <Ico n="lock" /> : <Ico n="play" />}</span>
+                <span className="node">{s === 'done' ? <Ico n="check" /> : s === 'locked' ? <Ico n="lock" /> : <img className="lemon" src={IMG.lemon} alt="" width="88" height="88" />}</span>
                 <div className="card">
                   <p className="kicker">{fmt(J.stop, { i: i + 1, m: m.min })}</p>
                   <h2>{m.title}</h2>
@@ -117,7 +117,7 @@ export default function Journey() {
             );
           })}
           <li className={`stop s-${finalState} ${total % 2 ? 'right' : 'left'} final`} data-stop={total}>
-            <span className="node">{finalState === 'done' ? <Ico n="check" /> : finalState === 'locked' ? <Ico n="lock" /> : <Ico n="award" />}</span>
+            <span className="node">{finalState === 'done' ? <Ico n="check" /> : finalState === 'locked' ? <Ico n="lock" /> : <img className="lemon" src={IMG.lemon} alt="" width="88" height="88" />}</span>
             <div className="card">
               <p className="kicker">{fmt(J.finalKicker, { n: finalQuestions.length })}</p>
               <h2>{J.finalTitle}</h2>

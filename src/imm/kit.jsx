@@ -141,5 +141,5 @@ export function useReveal(deps = []) {
 export const IMG = {
   heroVideo: '/immersive/hero.mp4', heroPoster: '/immersive/hero-poster.jpg', heroBlur: '/immersive/hero-poster-blur.jpg',
   meadow: '/immersive/bg-pc.jpg', meadowBlur: '/immersive/bg-pc-blur.jpg', sky: '/immersive/bg-clouds.jpg', skyBlur: '/immersive/bg-clouds-blur.jpg',
-  logo: '/immersive/logo-white.png',
+  logo: '/immersive/logo-white.png', lemon: '/immersive/lemon.png',
 };
