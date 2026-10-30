@@ -30,7 +30,8 @@ const ChatWidget = () => {
   const inputRef = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages, loading, open]);
-  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  // su PC il cursore va subito nel campo; su telefono no, altrimenti si apre la tastiera e copre la chat
+  useEffect(() => { if (open && window.matchMedia('(hover: hover) and (pointer: fine)').matches) inputRef.current?.focus(); }, [open]);
   useEffect(() => {
     const f = () => { setOpen(true); setNudge(false); };
     window.addEventListener('lemo:open-chat', f);

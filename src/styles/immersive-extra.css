@@ -309,3 +309,11 @@
   .imm .scene.hero>.cue{position:relative;left:auto;bottom:auto;transform:none;align-self:center;margin-bottom:calc(92px + env(safe-area-inset-bottom))}
   .imm.scrolled .scene.hero>.cue{transform:translateY(12px)!important}
 }
+
+/* TELEFONO, Formazione: il cielo intero e non ritagliato (la mongolfiera non finisce sul bordo),
+   preceduto da una fascia d'azzurro dove avviene il passaggio dallo spazio: la mongolfiera arriva già nitida */
+@media (max-width:760px){
+  .imm .strip.has-vid .strip-space+.strip-img{height:calc(179.2vw + 45vh);background-size:100% auto;background-position:center 45vh;background-repeat:no-repeat;background-color:rgb(100,162,223)}
+}
+/* TELEFONO: "Torna alla tappa" allineato a sinistra, così non tocca la bolla della chat */
+@media (max-width:860px){.imm .backto{left:12px;transform:none;max-width:calc(100% - 100px)}}
