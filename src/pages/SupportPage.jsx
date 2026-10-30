@@ -56,8 +56,8 @@ export default function SupportPage() {
   return (
     <>
       <World scenes={[
-        { src: IMG.heroPoster, dim: 0.15 },
-        { src: IMG.heroBlur, at: '.support', offset: -0.7, dim: 0.3 },
+        { video: IMG.library, videoM: IMG.libraryM, poster: IMG.libraryPoster, dim: 0.25 },
+        { src: IMG.libraryBlur, at: '.support', offset: -0.7, dim: 0.3 },
         { palette: true, at: '.support', offset: -0.15, dim: 0 },
       ]} />
       <section className="scene hero short">

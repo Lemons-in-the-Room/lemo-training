@@ -170,7 +170,8 @@ export default function Access() {
 
   return (
     <div className="imm access">
-      <World scenes={[{ video: IMG.heroVideo, poster: IMG.heroPoster, dim: 0.35 }]} />
+      {/* zattera al tramonto, in loop (avanti e indietro): la prima cosa che vede chi arriva */}
+      <World scenes={[{ video: IMG.raft, videoM: IMG.raftM, poster: IMG.raftPoster, dim: 0.3 }]} />
       <header className="top">
         <span className="brand"><img src={IMG.logo} alt="Lemons in the Room" width="150" height="30" /></span>
         <div className="acc-tools"><LangMenu /></div>
