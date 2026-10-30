@@ -279,7 +279,6 @@
 /* Formazione: lo spazio in loop è il primo pezzo della striscia; il cielo lo copre sfumando dal basso (discesa nell'atmosfera) */
 .imm .strip-space{position:relative;height:110vh;overflow:hidden}
 .imm .strip-vid{display:block;width:100%;height:100%;object-fit:cover;object-position:62% 60%}
-.imm .space-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .imm .strip.has-vid .strip-space+.strip-img{margin-top:-70vh;height:max(140vh,179.2vw);background-position:center top;transform:scaleX(-1);
   -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.12) 18vh,rgba(0,0,0,.5) 40vh,#000 70vh);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.12) 18vh,rgba(0,0,0,.5) 40vh,#000 70vh)}
 /* bagliore dell'atmosfera: tra spazio e cielo una luce azzurra-rosata, così il passaggio non è una semplice dissolvenza */
