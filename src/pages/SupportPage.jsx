@@ -14,7 +14,6 @@ export default function SupportPage() {
   const S = u.support;
   const acc = useAccount();
   const { hash } = useLocation();
-  const [type, setType] = useState('Tecnico');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [state, setState] = useState('idle'); // idle | sending | sent | error
@@ -33,7 +32,7 @@ export default function SupportPage() {
     setState('sending'); setErr('');
     const p = acc.profile || {};
     const payload = {
-      subject, ticketType: type, message, lang,
+      subject, message, lang,
       user_name: p.name || '—', hospital: p.hospital || '—', department: p.department || '—', patientType: p.patient_type || '—',
     };
     try {
@@ -77,7 +76,7 @@ export default function SupportPage() {
           <div className="faq">
             <h2 className="sec rv">{s.faqTitle}</h2>
             {s.faqs.map((f, k) => (
-              <details key={k} className="rv" open={k === 0}>
+              <details key={k} className="rv">
                 <summary><span><small>{s.tagLabels?.[f.tag] || f.tag}</small>{f.q}</span><Ico n="down" /></summary>
                 <p>{f.a}</p>
               </details>
@@ -87,11 +86,6 @@ export default function SupportPage() {
             <h2 className="sec rv">{S.ticket}</h2>
             <form className={`ticket rv ${state === 'sent' ? 'sent' : ''}`} id="ticket" onSubmit={submit}>
               <p className="sla"><Ico n="clock" /><span>{s.ticketSla}</span></p>
-              <div className="seg2" role="radiogroup" aria-label={s.ticketType}>
-                {[['Tecnico', s.optionTech], ['Operativo', s.optionOp]].map(([v, l]) => (
-                  <label key={v}><input type="radio" name="ttype" checked={type === v} onChange={() => setType(v)} /><span>{l}</span></label>
-                ))}
-              </div>
               <label className="fld"><span>{s.ticketSubject}</span><input required maxLength={140} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={s.placeholderSubject} /></label>
               <label className="fld"><span>{s.ticketDetails}</span><textarea required rows={4} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={s.placeholderDetails} /></label>
               {err && <p className="form-err" role="alert">{err}</p>}

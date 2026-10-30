@@ -50,11 +50,12 @@ async function createNotionTicket({ subject, ticketType, message, hospital, depa
   const properties = {
     'Support Event': { title: [{ text: { content: subject } }] },
     'Descrizione problema': { rich_text: [{ text: { content: message.slice(0, 1900) } }] },
-    'Feedback': { select: { name: ticketType === 'Tecnico' ? 'Operations' : 'Support' } },
     'Category': { select: { name: 'Support' } },
     'Request type': { select: { name: 'inbound' } },
     'Data richiesta': { date: { start: new Date().toISOString().split('T')[0] } },
   };
+  // tipo di richiesta non più scelto dall'operatore: 'Feedback' si compila solo se arriva un tipo (vecchi client)
+  if (ticketType) properties['Feedback'] = { select: { name: ticketType === 'Tecnico' ? 'Operations' : 'Support' } };
   if (department) properties['Reparto'] = { select: { name: department } };
   if (aziendaId) properties['Aziende'] = { relation: [{ id: aziendaId }] };
 
@@ -80,8 +81,8 @@ function ticketCode(d) {
 
 function buildMail(t) {
   const tech = t.ticketType === 'Tecnico';
-  const accent = tech ? '#FF8731' : '#8756FA';
-  const typeLabel = tech ? 'Tecnico · Guasto hardware o sistema' : 'Operativo · App o formazione';
+  const accent = t.ticketType === 'Operativo' ? '#8756FA' : '#FF8731';
+  const typeLabel = !t.ticketType ? 'Richiesta di supporto' : tech ? 'Tecnico · Guasto hardware o sistema' : 'Operativo · App o formazione';
   const replySubject = encodeURIComponent(`Re: [${t.code}] ${t.subject}`);
   const row = (label, value) => value ? `
       <tr>
@@ -157,7 +158,7 @@ function buildMail(t) {
 </body></html>`;
 
   const text = [
-    `NUOVO TICKET ${t.ticketType.toUpperCase()} — ${t.code}`,
+    `NUOVO TICKET${t.ticketType ? ' ' + t.ticketType.toUpperCase() : ''} — ${t.code}`,
     `Oggetto: ${t.subject}`,
     `Aperto: ${t.when} · Scadenza ${SLA_HOURS}h: ${t.deadline}`,
     '',
@@ -171,7 +172,7 @@ function buildMail(t) {
   ].filter(Boolean).join('\n');
 
   return {
-    subject: `⚠️ TICKET ${t.ticketType.toUpperCase()} · ${t.hospital || 'Piattaforma'} · ${t.subject}`,
+    subject: `⚠️ TICKET${t.ticketType ? ' ' + t.ticketType.toUpperCase() : ''} · ${t.hospital || 'Piattaforma'} · ${t.subject}`,
     html,
     text,
   };
@@ -213,7 +214,7 @@ export default async function handler(req, res) {
   const body = req.body || {};
   const subject = String(body.subject || '').trim().slice(0, 150);
   const message = String(body.message || '').trim().slice(0, 5000);
-  const ticketType = body.ticketType === 'Tecnico' ? 'Tecnico' : 'Operativo';
+  const ticketType = body.ticketType === 'Tecnico' ? 'Tecnico' : body.ticketType === 'Operativo' ? 'Operativo' : null;
   if (!subject || !message) return res.status(400).json({ error: 'Missing required fields' });
 
   const { data: p } = await db.from('users').select('name, first_name, last_name, email, phone, hospital, department, patient_type').eq('id', userData.user.id).maybeSingle();
