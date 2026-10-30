@@ -120,7 +120,8 @@ export function World({ scenes, deps = [] }) {
     <div className="world" aria-hidden="true" ref={ref}>
       <div className="layers">
         {scenes.map((s, k) => s.video
-          ? <video key={k} className="layer" data-k={k} autoPlay muted loop playsInline poster={s.poster} src={s.video} />
+          ? <video key={k} className="layer" data-k={k} autoPlay muted loop={!s.once} playsInline preload="auto" poster={s.poster}
+              src={s.videoM && window.matchMedia('(max-width: 760px)').matches ? s.videoM : s.video} />
           : s.strip
             ? <div key={k} className="layer strip" data-k={k}>{s.strip.map((src) => <div key={src} className="strip-img" style={{ backgroundImage: `url(${src})` }} />)}</div>
             : s.palette
@@ -144,6 +145,7 @@ export function useReveal(deps = []) {
 
 export const IMG = {
   heroVideo: '/immersive/hero.mp4', heroPoster: '/immersive/hero-poster.jpg', heroBlur: '/immersive/hero-poster-blur.jpg',
+  space: '/immersive/space.mp4', spaceM: '/immersive/space-m.mp4', spacePoster: '/immersive/space-poster.jpg',
   meadow: '/immersive/bg-pc.jpg', meadowBlur: '/immersive/bg-pc-blur.jpg', sky: '/immersive/bg-clouds.jpg', skyBlur: '/immersive/bg-clouds-blur.jpg',
   logo: '/immersive/logo-white.png', lemon: '/immersive/lemon.png', mascot: '/immersive/mascot.webp',
 };
