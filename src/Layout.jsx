@@ -4,7 +4,7 @@ import { useLang } from './LanguageContext';
 import { supabase } from './utils/supabase';
 import { AccountProvider, useAccount } from './account';
 import ChatWidget from './components/ChatWidget';
-import { Ico, IMG } from './imm/kit';
+import { Ico, IMG, cancelGlide } from './imm/kit';
 import './styles/immersive.css';
 import './styles/immersive-extra.css';
 
@@ -76,7 +76,7 @@ function Shell() {
     return () => removeEventListener('scroll', f);
   }, []);
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
+  useEffect(() => { cancelGlide(); window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
 
   const logout = async () => {
     localStorage.removeItem('lemo_user');

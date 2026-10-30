@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useLang } from '../LanguageContext';
 import { useAccount } from '../account';
 import { fmt } from '../i18n/ui';
-import { Ico, IMG, World, useReveal } from '../imm/kit';
+import { Ico, IMG, World, useReveal, cancelGlide } from '../imm/kit';
 
 const md = (t) => String(t ?? '').split(/\*\*(.+?)\*\*/g).map((part, k) => (k % 2 ? <b key={k}>{part}</b> : part));
 
@@ -55,6 +55,18 @@ export default function LessonPage() {
   const onMain = useCallback((p, end) => setProg((s) => ({ ...s, main: Math.max(s.main, p), mainEnd: s.mainEnd || end })), []);
   const onTab = useCallback((p, end) => setProg((s) => ({ ...s, tablet: Math.max(s.tablet, p), tabletEnd: s.tabletEnd || end })), []);
   useReveal([i]);
+  // la lezione si apre sempre dall'alto (video subito visibile). Su iPhone lo scorrimento "a inerzia"
+  // della pagina precedente o una discesa lenta in corso potevano portarla a metà: si riporta in cima più volte.
+  useEffect(() => {
+    cancelGlide();
+    let touched = false;
+    const mark = () => { touched = true; };
+    const top = () => { if (!touched) window.scrollTo({ top: 0, behavior: 'instant' }); };
+    top();
+    const t1 = setTimeout(() => { addEventListener('touchstart', mark, { passive: true }); addEventListener('wheel', mark, { passive: true }); top(); }, 60);
+    const t2 = setTimeout(top, 250), t3 = setTimeout(top, 600);
+    return () => { [t1, t2, t3].forEach(clearTimeout); removeEventListener('touchstart', mark); removeEventListener('wheel', mark); };
+  }, [i]);
   if (!m || acc.stopState(i) === 'locked') return <Navigate to="/formazione" replace />;
   const done = acc.stopState(i) === 'done';
   const last = i + 1 >= acc.total;

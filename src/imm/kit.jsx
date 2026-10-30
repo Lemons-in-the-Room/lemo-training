@@ -34,6 +34,8 @@ export function Ico({ n, className = 'i' }) {
 
 // scorrimento lento (si interrompe se l'utente usa rotellina o dito)
 let glideRaf = 0;
+// ferma una discesa lenta in corso (es. cambio pagina mentre scorre)
+export const cancelGlide = () => cancelAnimationFrame(glideRaf);
 export function glideTo(y) {
   cancelAnimationFrame(glideRaf);
   const from = window.scrollY, dist = y - from;

@@ -317,3 +317,11 @@
 }
 /* TELEFONO: "Torna alla tappa" allineato a sinistra, così non tocca la bolla della chat */
 @media (max-width:860px){.imm .backto{left:12px;transform:none;max-width:calc(100% - 100px)}}
+
+/* TELEFONO: il traguardo sta sulla linea come le tappe, con il testo a destra allineato a sinistra */
+@media (max-width:860px){
+  .imm .arrival{display:grid;grid-template-columns:64px 1fr;column-gap:14px;row-gap:10px;justify-items:start;align-items:start;text-align:left;padding:30px 0 20px}
+  .imm .arrival>.node{grid-column:1;grid-row:1 / span 4;justify-self:center}
+  .imm .arrival>:not(.node){grid-column:2}
+  .imm .arrival h2{margin-top:8px}
+}
