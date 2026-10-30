@@ -102,10 +102,9 @@ export default function Journey() {
 
   return (
     <>
-      {/* si parte nello spazio (galassia, poi la Terra), scorrendo si scende tra le nuvole, la mongolfiera e il prato */}
+      {/* si parte nello spazio (video in loop), scorrendo si scende tra le nuvole, la mongolfiera e il prato */}
       <World scenes={[
-        { video: IMG.space, videoM: IMG.spaceM, poster: IMG.spacePoster, once: true, dim: 0.18 },
-        { strip: [IMG.sky, IMG.meadow], at: '.journey', offset: -0.1, dim: 0.08 },
+        { strip: [IMG.sky, IMG.meadow], stripVideo: { src: IMG.space, srcM: IMG.spaceM, poster: IMG.spacePoster }, dim: 0.08 },
       ]} />
       <section className="scene hero short">
         <div className="hero-in">

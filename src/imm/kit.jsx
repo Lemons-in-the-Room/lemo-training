@@ -104,7 +104,7 @@ export function World({ scenes, deps = [] }) {
       if (strip) {
         const max = Math.max(1, document.documentElement.scrollHeight - vh);
         const travel = strip.offsetHeight - vh;
-        strip.style.transform = `translate3d(0,${(-smooth(Math.min(1, y / max)) * travel).toFixed(1)}px,0)`;
+        strip.style.transform = `translate3d(0,${Math.round(-smooth(Math.min(1, y / max)) * travel)}px,0)`;
       }
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(paint); };
@@ -123,7 +123,14 @@ export function World({ scenes, deps = [] }) {
           ? <video key={k} className="layer" data-k={k} autoPlay muted loop={!s.once} playsInline preload="auto" poster={s.poster}
               src={s.videoM && window.matchMedia('(max-width: 760px)').matches ? s.videoM : s.video} />
           : s.strip
-            ? <div key={k} className="layer strip" data-k={k}>{s.strip.map((src) => <div key={src} className="strip-img" style={{ backgroundImage: `url(${src})` }} />)}</div>
+            ? (
+              <div key={k} className={`layer strip ${s.stripVideo ? 'has-vid' : ''}`} data-k={k}>
+                {/* video in cima alla striscia (es. spazio in loop): scorrendo si "scende" verso le immagini sotto */}
+                {s.stripVideo && <video className="strip-vid" autoPlay muted loop playsInline preload="auto" poster={s.stripVideo.poster}
+                  src={s.stripVideo.srcM && window.matchMedia('(max-width: 760px)').matches ? s.stripVideo.srcM : s.stripVideo.src} />}
+                {s.strip.map((src) => <div key={src} className="strip-img" style={{ backgroundImage: `url(${src})` }} />)}
+              </div>
+            )
             : s.palette
               ? <div key={k} className="layer palette" data-k={k}><i /><i /><i /></div>
               : <div key={k} className="layer" data-k={k} style={{ backgroundImage: `url(${s.src})` }} />)}
@@ -145,7 +152,7 @@ export function useReveal(deps = []) {
 
 export const IMG = {
   heroVideo: '/immersive/hero.mp4', heroPoster: '/immersive/hero-poster.jpg', heroBlur: '/immersive/hero-poster-blur.jpg',
-  space: '/immersive/space.mp4', spaceM: '/immersive/space-m.mp4', spacePoster: '/immersive/space-poster.jpg',
+  space: '/immersive/space-loop.mp4', spaceM: '/immersive/space-loop-m.mp4', spacePoster: '/immersive/space-loop-poster.jpg',
   meadow: '/immersive/bg-pc.jpg', meadowBlur: '/immersive/bg-pc-blur.jpg', sky: '/immersive/bg-clouds.jpg', skyBlur: '/immersive/bg-clouds-blur.jpg',
   logo: '/immersive/logo-white.png', lemon: '/immersive/lemon.png', mascot: '/immersive/mascot.webp',
 };
