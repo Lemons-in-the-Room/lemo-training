@@ -277,11 +277,13 @@
 @media (min-width:861px){.imm .trail{margin-bottom:58px}}
 
 /* Formazione: lo spazio in loop è il primo pezzo della striscia; il cielo lo copre sfumando dal basso (discesa nell'atmosfera) */
-.imm .strip-vid{display:block;width:100%;height:110vh;object-fit:cover;object-position:62% 60%}
-.imm .strip.has-vid .strip-img:first-of-type{margin-top:-70vh;height:max(140vh,179.2vw);background-position:center top;transform:scaleX(-1);
+.imm .strip-space{position:relative;height:110vh;overflow:hidden}
+.imm .strip-vid{display:block;width:100%;height:100%;object-fit:cover;object-position:62% 60%}
+.imm .space-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.imm .strip.has-vid .strip-space+.strip-img{margin-top:-70vh;height:max(140vh,179.2vw);background-position:center top;transform:scaleX(-1);
   -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.12) 18vh,rgba(0,0,0,.5) 40vh,#000 70vh);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.12) 18vh,rgba(0,0,0,.5) 40vh,#000 70vh)}
 /* bagliore dell'atmosfera: tra spazio e cielo una luce azzurra-rosata, così il passaggio non è una semplice dissolvenza */
-.imm .strip.has-vid .strip-vid+.strip-img::before{content:"";position:absolute;inset:0 0 auto 0;height:70vh;transform:scaleX(-1);
+.imm .strip.has-vid .strip-space+.strip-img::before{content:"";position:absolute;inset:0 0 auto 0;height:70vh;transform:scaleX(-1);
   background:linear-gradient(180deg,rgba(40,30,110,0) 0,rgba(110,90,200,.35) 30%,rgba(255,190,170,.35) 60%,rgba(255,255,255,0) 100%)}
 .imm .strip.has-vid .strip-img{position:relative}
 /* le tappe iniziano dopo lo spazio: il titolo resta da solo nello spazio, poi si scende */
@@ -290,8 +292,10 @@
 .imm .strip.has-vid{background:#07051a}
 @media (max-width:760px){
   /* su telefono il video non riempie tutta l'altezza: così si vedono sia il pianeta sia la spirale; sotto continua lo spazio scuro */
-  .imm .strip-vid{height:82vh;object-position:30% 50%}
-  .imm .strip.has-vid .strip-img:first-of-type{margin-top:-62vh}
+  .imm .strip-space{height:100vh}.imm .strip-vid{object-position:40% 50%}
+  /* telefono: sovrapposizione più corta, così la mongolfiera non compare in trasparenza sopra lo spazio */
+  .imm .strip.has-vid .strip-space+.strip-img{margin-top:-40vh;-webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.45) 22vh,#000 40vh);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.45) 22vh,#000 40vh)}
+  .imm .strip.has-vid .strip-space+.strip-img::before{height:40vh}
   .imm .space-hero+.journey{padding-top:85vh}
 }
 

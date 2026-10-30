@@ -104,7 +104,7 @@ export default function Journey() {
     <>
       {/* si parte nello spazio (video in loop), scorrendo si scende tra le nuvole, la mongolfiera e il prato */}
       <World scenes={[
-        { strip: [IMG.sky, IMG.meadow], stripVideo: { src: IMG.space, srcM: IMG.spaceM, poster: IMG.spacePoster, until: '.journey', untilOffset: -0.25 }, dim: 0.08 },
+        { strip: [IMG.sky, IMG.meadow], stripVideo: { src: IMG.space, srcM: IMG.spaceM, poster: IMG.spacePoster, fx: true, until: '.journey', untilOffset: -0.25 }, dim: 0.08 },
       ]} />
       <section className="scene hero short space-hero">
         <div className="hero-in">

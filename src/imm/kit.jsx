@@ -1,4 +1,5 @@
 import React from 'react';
+import SpaceFX from './SpaceFX';
 /* eslint-disable react-refresh/only-export-components */
 // Kit dell'interfaccia immersiva: icone, freccia "Scorri", mondo di sfondo, scorrimento lento, comparse.
 import { useEffect, useRef } from 'react';
@@ -109,7 +110,7 @@ export function World({ scenes, deps = [] }) {
       if (strip) {
         const max = Math.max(1, document.documentElement.scrollHeight - vh);
         const travel = strip.offsetHeight - vh;
-        const vid = strip.querySelector('.strip-vid');
+        const vid = strip.querySelector('.strip-space');
         let off;
         if (vid && split) {
           // due tempi: prima si scende dallo spazio fino al cielo, poi dal cielo al prato
@@ -139,8 +140,13 @@ export function World({ scenes, deps = [] }) {
             ? (
               <div key={k} className={`layer strip ${s.stripVideo ? 'has-vid' : ''}`} data-k={k}>
                 {/* video in cima alla striscia (es. spazio in loop): scorrendo si "scende" verso le immagini sotto */}
-                {s.stripVideo && <video className="strip-vid" autoPlay muted loop playsInline preload="auto" poster={s.stripVideo.poster}
-                  src={s.stripVideo.srcM && window.matchMedia('(max-width: 760px)').matches ? s.stripVideo.srcM : s.stripVideo.src} />}
+                {s.stripVideo && (
+                  <div className="strip-space">
+                    <video className="strip-vid" autoPlay muted loop playsInline preload="auto" poster={s.stripVideo.poster}
+                      src={s.stripVideo.srcM && window.matchMedia('(max-width: 760px)').matches ? s.stripVideo.srcM : s.stripVideo.src} />
+                    {s.stripVideo.fx && <SpaceFX />}
+                  </div>
+                )}
                 {s.strip.map((src) => <div key={src} className="strip-img" style={{ backgroundImage: `url(${src})` }} />)}
               </div>
             )
