@@ -300,3 +300,12 @@
 
 /* sfondi fermi: niente "respiro"/zoom lento, su molti PC produceva un tremolio orizzontale */
 .imm .world .layer[data-k="0"],.imm .h-pic img,.imm .h-next figure img{animation:none!important}
+
+/* TELEFONO: la freccia "Scorri" non è più appoggiata in fondo allo schermo ma segue il testo.
+   Con le barre di Safari/Chrome lo schermo utile è basso (~660px) e la freccia finiva sopra testo e pulsanti. */
+@media (max-width:860px){
+  .imm .scene.hero{flex-direction:column;justify-content:flex-end;align-items:stretch}
+  .imm .scene.hero>.hero-in{padding-bottom:22px!important}
+  .imm .scene.hero>.cue{position:relative;left:auto;bottom:auto;transform:none;align-self:center;margin-bottom:calc(92px + env(safe-area-inset-bottom))}
+  .imm.scrolled .scene.hero>.cue{transform:translateY(12px)!important}
+}
