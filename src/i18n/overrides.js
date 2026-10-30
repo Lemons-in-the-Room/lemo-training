@@ -25,10 +25,12 @@ const setPath = (obj, path, val) => {
   if (parent && typeof parent[last] === 'string') parent[last] = val;
 };
 
+const deepClone = (o) => (Array.isArray(o) ? o.map(deepClone) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, deepClone(v)])) : o); // copia anche oggetti con funzioni (structuredClone non può)
+
 export function applyOverrides(t, u, rows, lang) {
   const mine = (rows || []).filter((r) => r[lang] != null && r[lang] !== '');
   if (!mine.length) return { t, u };
-  const T = structuredClone(t), U = structuredClone(u);
+  const T = deepClone(t), U = deepClone(u);
   for (const r of mine) {
     const [root, ...p] = r.key.split('.');
     if (root === 'lang') setPath(T, p, r[lang]);
