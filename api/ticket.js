@@ -54,8 +54,6 @@ async function createNotionTicket({ subject, ticketType, message, hospital, depa
     'Request type': { select: { name: 'inbound' } },
     'Data richiesta': { date: { start: new Date().toISOString().split('T')[0] } },
   };
-  // tipo di richiesta non più scelto dall'operatore: 'Feedback' si compila solo se arriva un tipo (vecchi client)
-  if (ticketType) properties['Feedback'] = { select: { name: ticketType === 'Tecnico' ? 'Operations' : 'Support' } };
   if (department) properties['Reparto'] = { select: { name: department } };
   if (aziendaId) properties['Aziende'] = { relation: [{ id: aziendaId }] };
 
