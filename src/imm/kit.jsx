@@ -88,7 +88,12 @@ export function World({ scenes, deps = [] }) {
   useEffect(() => {
     const root = ref.current; if (!root) return undefined;
     let ys = [], raf = 0;
-    const measure = () => { ys = scenes.map((s) => (s.at ? topOf(s.at) : 0) + (s.offset || 0) * window.innerHeight); };
+    let split = 0; // striscia con video: scorrimento al quale lo spazio ha lasciato posto al cielo
+    const measure = () => {
+      ys = scenes.map((s) => (s.at ? topOf(s.at) : 0) + (s.offset || 0) * window.innerHeight);
+      const sv = scenes.find((s) => s.stripVideo && s.stripVideo.until);
+      split = sv ? Math.max(1, topOf(sv.stripVideo.until) + (sv.stripVideo.untilOffset || 0) * window.innerHeight) : 0;
+    };
     const paint = () => {
       raf = 0;
       const y = window.scrollY, vh = window.innerHeight;
@@ -104,7 +109,15 @@ export function World({ scenes, deps = [] }) {
       if (strip) {
         const max = Math.max(1, document.documentElement.scrollHeight - vh);
         const travel = strip.offsetHeight - vh;
-        strip.style.transform = `translate3d(0,${Math.round(-smooth(Math.min(1, y / max)) * travel)}px,0)`;
+        const vid = strip.querySelector('.strip-vid');
+        let off;
+        if (vid && split) {
+          // due tempi: prima si scende dallo spazio fino al cielo, poi dal cielo al prato
+          const sky = vid.nextElementSibling; // cielo quasi pieno a ~60% schermo dal suo bordo alto (sfumatura)
+          const V = Math.min(travel, sky ? sky.offsetTop + vh * 0.6 : vid.offsetHeight);
+          off = y <= split ? Math.pow(Math.min(1, y / split), 1.6) * V : V + smooth(Math.min(1, (y - split) / Math.max(1, max - split))) * (travel - V);
+        } else off = smooth(Math.min(1, y / max)) * travel;
+        strip.style.transform = `translate3d(0,${Math.round(-off)}px,0)`;
       }
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(paint); };
