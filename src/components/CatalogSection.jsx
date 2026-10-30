@@ -12,7 +12,8 @@ const KINDS = [
 export default function CatalogSection() {
   const [rows, setRows] = useState([]);
   const [newName, setNewName] = useState({ hospital: '', department: '' });
-  const [edit, setEdit] = useState(null); // { id, name }
+  const [edit, setEdit] = useState(null); // { id, name, old, kind }
+  const [note, setNote] = useState('');
 
   const fetchRows = () => supabase.from('catalog_options').select('*').order('approved').order('name');
   const load = () => fetchRows().then(({ data }) => setRows(data || []));
@@ -26,10 +27,23 @@ export default function CatalogSection() {
   const approve = (id) => run(supabase.from('catalog_options').update({ approved: true }).eq('id', id));
   const remove = (r) => { if (confirm(`Togliere "${r.name}" dall'elenco? Gli operatori già registrati non cambiano.`)) run(supabase.from('catalog_options').delete().eq('id', r.id)); };
   const add = (kind) => { const n = newName[kind].trim(); if (n.length < 2) return; setNewName({ ...newName, [kind]: '' }); run(supabase.from('catalog_options').insert({ kind, name: n, approved: true })); };
-  const rename = () => { const n = edit.name.trim(); if (n.length < 2) return; const id = edit.id; setEdit(null); run(supabase.from('catalog_options').update({ name: n }).eq('id', id)); };
+  // Rinomina: cambia la voce dell'elenco e anche il nome sugli operatori già registrati con quel nome
+  const rename = async () => {
+    const n = edit.name.trim(); if (n.length < 2) return;
+    const { id, old, kind } = edit; setEdit(null);
+    if (n === old) return;
+    const col = kind === 'hospital' ? 'hospital' : 'department';
+    const { error } = await supabase.from('catalog_options').update({ name: n }).eq('id', id);
+    if (error) { alert(error.message); load(); return; }
+    const { data: moved, error: e2 } = await supabase.from('users').update({ [col]: n }).eq(col, old).select('id');
+    if (e2) alert(e2.message);
+    setNote(`«${old}» → «${n}»: aggiornato anche su ${moved?.length || 0} ${moved?.length === 1 ? 'operatore' : 'operatori'}.`);
+    load();
+  };
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
+      {note && <p className="xl:col-span-2 text-sm font-semibold text-emerald-300 bg-emerald-500/10 rounded-2xl px-5 py-3 flex items-center gap-2"><Check className="w-4 h-4" /> {note}<button onClick={() => setNote('')} className="ml-auto text-emerald-300/70 hover:text-white"><X className="w-4 h-4" /></button></p>}
       {KINDS.map(({ kind, title, icon: Icon }) => {
         const list = rows.filter((r) => r.kind === kind);
         const pending = list.filter((r) => !r.approved);
@@ -55,7 +69,7 @@ export default function CatalogSection() {
                         : <span className="flex-1 text-sm font-semibold text-white">{r.name}</span>}
                       {edit?.id === r.id
                         ? <><button onClick={rename} title="Salva" className="p-2 text-emerald-400 hover:bg-slate-700 rounded-lg"><Save className="w-4 h-4" /></button><button onClick={() => setEdit(null)} title="Annulla" className="p-2 text-slate-400 hover:bg-slate-700 rounded-lg"><X className="w-4 h-4" /></button></>
-                        : <button onClick={() => setEdit({ id: r.id, name: r.name })} title="Correggi il nome" className="p-2 text-slate-400 hover:bg-slate-700 rounded-lg"><Pencil className="w-4 h-4" /></button>}
+                        : <button onClick={() => setEdit({ id: r.id, name: r.name, old: r.name, kind })} title="Correggi il nome (anche sugli operatori registrati)" className="p-2 text-slate-400 hover:bg-slate-700 rounded-lg"><Pencil className="w-4 h-4" /></button>}
                       <button onClick={() => approve(r.id)} className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold text-xs flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Approva</button>
                       <button onClick={() => remove(r)} title="Scarta" className="p-2 text-red-400 hover:bg-slate-700 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                     </li>
@@ -69,7 +83,7 @@ export default function CatalogSection() {
                   {edit?.id === r.id
                     ? <><input autoFocus value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && rename()} className="flex-1 min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-white text-sm outline-none" /><button onClick={rename} className="p-1 text-emerald-400"><Save className="w-4 h-4" /></button></>
                     : <><span className="flex-1 min-w-0 truncate">{r.name}</span>
-                      <button onClick={() => setEdit({ id: r.id, name: r.name })} title="Rinomina" className="p-1 text-slate-500 opacity-0 group-hover:opacity-100 hover:text-white"><Pencil className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => setEdit({ id: r.id, name: r.name, old: r.name, kind })} title="Rinomina (anche sugli operatori registrati)" className="p-1 text-slate-500 opacity-0 group-hover:opacity-100 hover:text-white"><Pencil className="w-3.5 h-3.5" /></button>
                       <button onClick={() => remove(r)} title="Togli" className="p-1 text-slate-500 opacity-0 group-hover:opacity-100 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button></>}
                 </li>
               ))}

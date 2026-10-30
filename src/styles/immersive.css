@@ -278,7 +278,7 @@
 .imm .left .card,.imm .right .card{grid-column:2;justify-self:stretch;transform:translateY(24px);padding:22px}
 .imm .arrival{padding:40px 0}
 .imm .sup-in{grid-template-columns:1fr}
-.imm .side{position:static;order:-1}
+.imm .side{position:static}
 .imm .key{grid-template-columns:1fr;gap:12px}
 }
 .imm .player{position:relative}

@@ -1,3 +1,4 @@
+import React from 'react';
 /* eslint-disable react-refresh/only-export-components */
 // Kit dell'interfaccia immersiva: icone, freccia "Scorri", mondo di sfondo, scorrimento lento, comparse.
 import { useEffect, useRef } from 'react';
@@ -74,7 +75,7 @@ export function Cue({ label, onClick }) {
 
 // Titolo con parole che salgono una dopo l'altra
 export const Split = ({ words, as: Tag = 'h1', className = '' }) => (
-  <Tag className={`split ${className}`}>{words.map((w, k) => <span key={k}>{w}{k < words.length - 1 ? ' ' : ''}</span>)}</Tag>
+  <Tag className={`split ${className}`}>{words.filter(Boolean).map((w, k) => <React.Fragment key={k}>{k > 0 && ' '}<span>{w}</span></React.Fragment>)}</Tag>
 );
 
 const smooth = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));

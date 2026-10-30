@@ -103,10 +103,17 @@ export default function Access() {
       if (!alive || !data) return;
       setLists({ hospital: data.filter((r) => r.kind === 'hospital').map((r) => r.name), department: data.filter((r) => r.kind === 'department').map((r) => r.name) });
     });
-    // elenchi ufficiali: Italia (Ministero della Salute 2023) e Spagna (Catálogo Nacional de Hospitales 2025)
-    fetch('/ospedali.json').then((r) => r.json()).then((d) => { if (alive) setOfficial(d); }).catch(() => {});
     return () => { alive = false; };
   }, [navigate]);
+
+  // elenchi ufficiali (Italia, Ministero della Salute 2023; Spagna, Catálogo Nacional de Hospitales 2025):
+  // si scaricano solo quando l'operatore arriva al passo con ospedale e reparto
+  useEffect(() => {
+    if (step !== 2 || official.length) return undefined;
+    let alive = true;
+    fetch('/ospedali.json').then((r) => r.json()).then((d) => { if (alive) setOfficial(d); }).catch(() => {});
+    return () => { alive = false; };
+  }, [step, official.length]);
 
   const login = async (e) => {
     e.preventDefault();

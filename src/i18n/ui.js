@@ -22,7 +22,7 @@ export const ui = {
     },
     journey: {
       title: ['Il', 'tuo', 'percorso'],
-      lead: '{n} tappe da un minuto, poi la verifica finale e il certificato.',
+      lead: '{n} tappe, poi la verifica finale e il certificato.',
       pill: '{d} di {n} tappe completate',
       tablet: 'Tablet in reparto', yes: 'Sì', no: 'No',
       stop: 'Tappa {i} · {m} min',
@@ -98,7 +98,7 @@ export const ui = {
     },
     journey: {
       title: ['Your', 'training', 'journey'],
-      lead: '{n} one-minute stages, then the final test and the certificate.',
+      lead: '{n} stages, then the final test and the certificate.',
       pill: '{d} of {n} stages completed',
       tablet: 'Tablet on the ward', yes: 'Yes', no: 'No',
       stop: 'Stage {i} · {m} min',
@@ -174,7 +174,7 @@ export const ui = {
     },
     journey: {
       title: ['Tu', 'recorrido'],
-      lead: '{n} etapas de un minuto, luego la prueba final y el certificado.',
+      lead: '{n} etapas, luego la prueba final y el certificado.',
       pill: '{d} de {n} etapas completadas',
       tablet: 'Tablet en el servicio', yes: 'Sí', no: 'No',
       stop: 'Etapa {i} · {m} min',

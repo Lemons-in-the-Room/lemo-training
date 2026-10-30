@@ -9,7 +9,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules/@supabase'))           return 'vendor-supabase';
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) return 'vendor-react';
-          if (id.includes('src/i18n/translations'))            return 'translations';
+          if (id.includes('src/i18n/lang-it'))                 return 'lang-it';
         },
       },
     },

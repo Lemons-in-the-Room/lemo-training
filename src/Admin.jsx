@@ -8,14 +8,14 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from './utils/supabase';
-import { translations } from './i18n/translations';
+import itText from './i18n/lang-it';
 import { getLessons, profileOf } from './course';
 import KnowledgeSection from './components/KnowledgeSection';
 import CatalogSection from './components/CatalogSection';
 import './styles/admin.css';
 
 const PER_PAGE = 20;
-const LESSONS = { adulti: getLessons(translations.it, 'adulti'), pediatria: getLessons(translations.it, 'pediatria') };
+const LESSONS = { adulti: getLessons(itText, 'adulti'), pediatria: getLessons(itText, 'pediatria') };
 
 // Account interni e di prova: esclusi dai numeri (si possono rivedere con l'interruttore in alto).
 const isInternal = (u) =>
@@ -226,6 +226,52 @@ const Overview = ({ users, onPick }) => {
   );
 };
 
+
+/* Correzione di ospedale e reparto di un operatore (scelta dagli elenchi ufficiali o scritta a mano) */
+let officialCache = null;
+const PlaceEditor = ({ u, onSaved }) => {
+  const [open, setOpen] = useState(false);
+  const [hosp, setHosp] = useState(u.hospital || '');
+  const [dep, setDep] = useState(u.department || '');
+  const [lists, setLists] = useState({ h: [], d: [] });
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    let alive = true;
+    // elenchi scaricati solo quando si apre la modifica
+    Promise.all([
+      officialCache || fetch('/ospedali.json').then((r) => r.json()).then((d) => (officialCache = d.map((x) => x.n))).catch(() => []),
+      supabase.from('catalog_options').select('kind,name').eq('approved', true),
+    ]).then(([off, { data }]) => {
+      if (!alive) return;
+      const h = [...new Set([...(data || []).filter((r) => r.kind === 'hospital').map((r) => r.name), ...off])].sort();
+      setLists({ h, d: (data || []).filter((r) => r.kind === 'department').map((r) => r.name).sort() });
+    });
+    return () => { alive = false; };
+  }, [open]);
+  const save = async () => {
+    if (hosp.trim().length < 2 || dep.trim().length < 2) return;
+    setSaving(true);
+    const { error } = await supabase.from('users').update({ hospital: hosp.trim(), department: dep.trim() }).eq('id', u.id);
+    setSaving(false);
+    if (error) { alert(error.message); return; }
+    setOpen(false); onSaved();
+  };
+  if (!open) return <button onClick={() => setOpen(true)} className="adm-link mt-4"><Building2 className="w-3.5 h-3.5" /> Correggi ospedale e reparto</button>;
+  return (
+    <div className="mt-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+      <input list={`h-${u.id}`} value={hosp} onChange={(e) => setHosp(e.target.value)} placeholder="Ospedale" className="adm-input w-full" />
+      <datalist id={`h-${u.id}`}>{lists.h.map((x) => <option key={x} value={x} />)}</datalist>
+      <input list={`d-${u.id}`} value={dep} onChange={(e) => setDep(e.target.value)} placeholder="Reparto" className="adm-input w-full" />
+      <datalist id={`d-${u.id}`}>{lists.d.map((x) => <option key={x} value={x} />)}</datalist>
+      <div className="flex gap-2">
+        <button onClick={save} disabled={saving} className="adm-act act-green"><Check className="w-3.5 h-3.5" /> {saving ? 'Salvo…' : 'Salva'}</button>
+        <button onClick={() => { setOpen(false); setHosp(u.hospital || ''); setDep(u.department || ''); }} className="adm-act act-amber"><X className="w-3.5 h-3.5" /> Annulla</button>
+      </div>
+    </div>
+  );
+};
+
 /* ---------------- OPERATORI ---------------- */
 const Operators = ({ users, actions, status, setStatus, hosp, setHosp }) => {
   const [q, setQ] = useState('');
@@ -347,6 +393,8 @@ const Operators = ({ users, actions, status, setStatus, hosp, setHosp }) => {
                           <div>
                             <p className="adm-label">Contatti</p>
                             <dl className="adm-dl">
+                              <dt>Ospedale</dt><dd>{u.hospital || '—'}</dd>
+                              <dt>Reparto</dt><dd>{u.department || '—'}</dd>
                               <dt>Email</dt><dd>{u.email || '—'}</dd>
                               <dt>Telefono</dt><dd>{u.phone || '—'}</dd>
                               <dt>Newsletter</dt><dd>{u.newsletterOptIn === true ? 'Iscritto' : u.newsletterOptIn === false ? 'Ha rifiutato' : 'Non ha risposto'}</dd>
@@ -354,6 +402,7 @@ const Operators = ({ users, actions, status, setStatus, hosp, setHosp }) => {
                               <dt>Ultimo accesso</dt><dd>{itDate(u.lastLogin, true)}</dd>
                               <dt>Onboarding già fatto</dt><dd>{u.priorOnboarding === true ? 'Sì' : u.priorOnboarding === false ? 'No' : '—'}</dd>
                             </dl>
+                            <PlaceEditor key={u.id + (u.hospital || '') + (u.department || '')} u={u} onSaved={actions.reload} />
                           </div>
                           <div>
                             <p className="adm-label">Tappe</p>
@@ -602,6 +651,7 @@ const Admin = () => {
     onConfirm: async () => { const { error } = await run(); if (error) alert(error.message); setModal({ open: false }); load(); },
   });
   const actions = {
+    reload: () => load(),
     reset: (u) => ask('Azzera il percorso', `Riportare "${u.name}" all'inizio? Tappe e verifica vengono azzerate, l'account resta.`,
       () => supabase.from('users').update({ completed_modules: [], final_quiz_passed_at: null, final_quiz_best_score: null }).eq('id', u.id), false),
     unlock: (u) => ask('Segna tutte le tappe come fatte', `Segnare come fatte tutte le tappe di "${u.name}"? Per il certificato dovrà comunque superare la verifica finale.`,
@@ -618,7 +668,7 @@ const Admin = () => {
     return (
       <div className="adm min-h-screen flex items-center justify-center p-6">
         <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="adm-panel p-10 w-full max-w-md text-center relative z-10">
-          <img src="/images/logos/logo bianco panna png.png" alt="Lemons in the room" className="w-16 h-16 mx-auto mb-6 object-contain" />
+          <img src="/immersive/logo-mark.webp" alt="Lemons in the room" className="w-16 h-16 mx-auto mb-6 object-contain" />
           <h1 className="adm-h1 !text-3xl mb-2">Area riservata</h1>
           <p className="text-white/55 mb-8">Accesso riservato al team Lemons in the room.</p>
           <form onSubmit={handleLogin} className="space-y-3">
@@ -639,7 +689,7 @@ const Admin = () => {
       <div className="max-w-[1400px] mx-auto px-5 md:px-10 pb-24 relative z-10">
         <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pt-8 pb-6">
           <div className="flex items-center gap-4">
-            <img src="/images/logos/logo bianco panna png.png" alt="Lemons in the room" className="w-12 h-12 object-contain" />
+            <img src="/immersive/logo-mark.webp" alt="Lemons in the room" className="w-12 h-12 object-contain" />
             <div>
               <h1 className="adm-h1">Dashboard formazione</h1>
               <p className="text-white/50 text-sm">{loadedAt ? `Dati aggiornati alle ${loadedAt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}` : 'Caricamento…'}</p>

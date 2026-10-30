@@ -38,44 +38,62 @@ export default function Journey() {
   useEffect(() => {
     const j = jRef.current; if (!j) return undefined;
     let raf = 0;
-    const paint = () => {
-      raf = 0;
-      const vh = innerHeight;
+    // Geometria (posizione delle tappe, forma del sentiero, tabella lunghezza→altezza della linea)
+    // calcolata una volta e di nuovo solo se cambia l'impaginazione; durante lo scorrimento solo conti semplici.
+    let geo = null;
+    const measure = () => {
       const nodes = [...j.querySelectorAll('.node')];
+      if (!nodes.length) return;
       const jr = j.getBoundingClientRect();
-      const c = (n) => { const r = n.getBoundingClientRect(); return { y: r.top + r.height / 2 - jr.top }; };
-      const first = c(nodes[0]), last = c(nodes[nodes.length - 1]);
-      const span = Math.max(1, last.y - first.y);
-      const svg = j.querySelector('.j-path'); svg.style.top = first.y + 'px'; svg.style.height = span + 'px';
-      const key = nodes.map((n) => Math.round(c(n).y)).join(',');
+      const ys = nodes.map((n) => { const r = n.getBoundingClientRect(); return r.top + r.height / 2 - jr.top; });
+      const first = ys[0], span = Math.max(1, ys[ys.length - 1] - first);
+      const svg = j.querySelector('.j-path'); svg.style.top = first + 'px'; svg.style.height = span + 'px';
+      const key = ys.map(Math.round).join(',');
       if (svg.dataset.key !== key) { // sentiero che passa esattamente per ogni pallino
         svg.dataset.key = key;
-        const ys = nodes.map((n) => c(n).y - first.y); let d = 'M100 0';
-        for (let k = 1; k < ys.length; k++) { const a = ys[k - 1], b = ys[k], h = (b - a) / 3, sw = k % 2 ? 70 : -70; d += ` C ${100 + sw} ${a + h}, ${100 + sw} ${b - h}, 100 ${b}`; }
+        let d = 'M100 0';
+        for (let k = 1; k < ys.length; k++) { const y0 = ys[k - 1] - first, y1 = ys[k] - first, h = (y1 - y0) / 3, sw = k % 2 ? 70 : -70; d += ` C ${100 + sw} ${y0 + h}, ${100 + sw} ${y1 - h}, 100 ${y1}`; }
         svg.setAttribute('viewBox', `0 0 200 ${span}`);
         svg.querySelectorAll('path').forEach((pa) => pa.setAttribute('d', d));
       }
-      const rail = j.querySelector('.j-rail'); rail.style.top = first.y + 'px'; rail.style.height = span + 'px';
-      const focus = vh * 0.6 - jr.top;
-      const t = Math.min(1, Math.max(0, (focus - first.y) / span));
-      const cur = Math.min(currentStop, nodes.length - 1);
-      const yNow = Math.min(t * span, c(nodes[cur]).y - first.y);
-      const line = svg.querySelector('.j-line'); const Ltot = line.getTotalLength(); let lo = 0, hi = Ltot;
-      for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; if (line.getPointAtLength(mid).y < yNow) lo = mid; else hi = mid; }
-      j.style.setProperty('--reach', (yNow <= 0 ? 0 : lo / Ltot).toFixed(4));
-      j.querySelectorAll('[data-stop]').forEach((s, k) => s.classList.toggle('in', c(nodes[k]).y < focus + vh * 0.15));
-      const nr = nodes[cur].getBoundingClientRect(), inJourney = jr.top < vh * 0.3;
-      const off = nr.bottom < 70 ? 'up' : nr.top > vh - 90 ? 'down' : '';
+      const rail = j.querySelector('.j-rail'); rail.style.top = first + 'px'; rail.style.height = span + 'px';
+      const line = svg.querySelector('.j-line'); const L = line.getTotalLength();
+      const N = 240, tab = new Float32Array(N + 1); // altezza raggiunta a ogni frazione della linea
+      for (let i = 0; i <= N; i++) tab[i] = line.getPointAtLength((L * i) / N).y;
+      geo = { ys, first, span, tab, N, stops: [...j.querySelectorAll('[data-stop]')], top: jr.top + window.scrollY };
+    };
+    const reachAt = (y) => { // frazione di linea che arriva all'altezza y (ricerca binaria sulla tabella)
+      const { tab, N } = geo; let lo = 0, hi = N;
+      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (tab[mid] < y) lo = mid; else hi = mid; }
+      const a = tab[lo], b = tab[hi]; return (lo + (b > a ? Math.min(1, Math.max(0, (y - a) / (b - a))) : 0)) / N;
+    };
+    const paint = () => {
+      raf = 0;
+      if (!geo) { measure(); if (!geo) return; }
+      const vh = innerHeight;
+      const { ys, first, span, stops } = geo;
+      const jTop = geo.top - window.scrollY; // posizione del sentiero nello schermo, senza misurare il DOM
+      const focus = vh * 0.6 - jTop;
+      const t = Math.min(1, Math.max(0, (focus - first) / span));
+      const cur = Math.min(currentStop, ys.length - 1);
+      const yNow = Math.min(t * span, ys[cur] - first);
+      j.style.setProperty('--reach', (yNow <= 0 ? 0 : reachAt(yNow)).toFixed(4));
+      stops.forEach((s, k) => { const on = ys[k] < focus + vh * 0.15; if (s.classList.contains('in') !== on) s.classList.toggle('in', on); });
+      const nodeTop = jTop + ys[cur] - 30, nodeBottom = jTop + ys[cur] + 30, inJourney = jTop < vh * 0.3;
+      const off = nodeBottom < 70 ? 'up' : nodeTop > vh - 90 ? 'down' : '';
       const show = inJourney && off && cur <= total;
       const nb = show ? { dir: off, text: cur < total ? fmt(J.backto, { i: cur + 1, t: lessons[cur].title }) : J.backtoFinal } : null;
       const k = JSON.stringify(nb);
       if (k !== backKey.current) { backKey.current = k; setBack(nb); }
     };
+    const remeasure = () => { geo = null; on(); };
     const on = () => { if (!raf) raf = requestAnimationFrame(paint); };
     paint();
-    const t1 = setTimeout(on, 500), t2 = setTimeout(on, 1500);
-    addEventListener('scroll', on, { passive: true }); addEventListener('resize', on);
-    return () => { clearTimeout(t1); clearTimeout(t2); cancelAnimationFrame(raf); removeEventListener('scroll', on); removeEventListener('resize', on); };
+    // si rimisura quando cambia l'impaginazione (font, immagini, finestra), non a ogni scorrimento
+    const t1 = setTimeout(remeasure, 500), t2 = setTimeout(remeasure, 1500);
+    const ro = new ResizeObserver(remeasure); ro.observe(j);
+    addEventListener('scroll', on, { passive: true }); addEventListener('resize', remeasure);
+    return () => { clearTimeout(t1); clearTimeout(t2); ro.disconnect(); cancelAnimationFrame(raf); removeEventListener('scroll', on); removeEventListener('resize', remeasure); };
   }, [currentStop, total, lessons, J]);
 
   const cueLabel = doneCount === 0 ? u.cue.start : allDone ? (passed ? u.cue.finish : u.cue.final) : u.cue.resume;
