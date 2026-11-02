@@ -52,6 +52,7 @@ function describe(root, path) {
   return { section: UI_SECTIONS[path[0]] || path[0], label: path.slice(1).join(' · '), order: `1-${path[0]}` };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- esportata solo per i test
 export function buildCatalog() {
   const rows = [];
   const add = (root, base, keep) => flat(base).forEach(([p, text]) => {
