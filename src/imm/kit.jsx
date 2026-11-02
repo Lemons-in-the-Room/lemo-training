@@ -135,7 +135,7 @@ export function World({ scenes, deps = [] }) {
     <div className="world" aria-hidden="true" ref={ref}>
       <div className="layers">
         {scenes.map((s, k) => s.video
-          ? <video key={k} className="layer" data-k={k} autoPlay muted loop={!s.once} playsInline preload="auto" poster={s.poster}
+          ? <video key={k} className="layer" data-k={k} autoPlay muted loop={!s.once} playsInline preload="auto" poster={s.posterM && window.matchMedia('(max-width: 760px)').matches ? s.posterM : s.poster}
               src={s.videoM && window.matchMedia('(max-width: 760px)').matches ? s.videoM : s.video} />
           : s.strip
             ? (
@@ -170,7 +170,7 @@ export function useReveal(deps = []) {
 }
 
 export const IMG = {
-  heroVideo: '/immersive/hero.mp4', heroPoster: '/immersive/hero-poster.jpg', heroBlur: '/immersive/hero-poster-blur.jpg',
+  heroVideo: '/immersive/hero.mp4', heroVideoM: '/immersive/hero-m.mp4', heroPosterM: '/immersive/hero-m-poster.jpg', heroPoster: '/immersive/hero-poster.jpg', heroBlur: '/immersive/hero-poster-blur.jpg',
   raft: '/immersive/raft.mp4', raftM: '/immersive/raft-m.mp4', raftPoster: '/immersive/raft-poster.jpg',
   library: '/immersive/library.mp4', libraryM: '/immersive/library-m.mp4', libraryPoster: '/immersive/library-poster.jpg', libraryBlur: '/immersive/library-blur.jpg',
   space: '/immersive/space-full.mp4', spaceM: '/immersive/space-full-m.mp4', spacePoster: '/immersive/space-full-poster.jpg',

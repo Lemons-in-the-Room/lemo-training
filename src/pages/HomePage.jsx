@@ -36,7 +36,7 @@ export default function HomePage() {
   return (
     <>
       <World scenes={[
-        { video: IMG.heroVideo, poster: IMG.heroPoster, dim: 0.12 },
+        { video: IMG.heroVideo, videoM: IMG.heroVideoM, poster: IMG.heroPoster, posterM: IMG.heroPosterM, dim: 0.12 },
         { src: IMG.heroBlur, at: '.progress-scene', offset: -0.75, dim: 0.4 },
         { src: IMG.meadowBlur, at: '.progress-scene', offset: -0.45, dim: 0.36 },
         { src: IMG.meadow, at: '.progress-scene', offset: -0.15, dim: 0.26 },

@@ -352,3 +352,7 @@
 
 /* TELEFONO: i video di sfondo sono già ritagliati in verticale con l'inquadratura giusta: niente spostamento */
 @media (max-width:760px){.imm .world video.layer,.imm .strip-vid{object-position:50% 50%}}
+
+/* HOME: la persona col visore resta inquadrata. PC: se lo schermo è largo e basso si taglia il fondo, non la testa.
+   Telefono: video verticale già centrato su di lei (hero-m.mp4). */
+@media (min-width:761px){.imm .world video.layer[src*="hero"]{object-position:50% 22%}}
