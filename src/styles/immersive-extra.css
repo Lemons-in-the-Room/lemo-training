@@ -349,3 +349,6 @@
 @keyframes mascotIn{0%{opacity:0;transform:translateY(40px) scale(.6) rotate(-12deg)}60%{opacity:1;transform:translateY(-8px) scale(1.06) rotate(4deg)}100%{transform:none}}
 .imm .q-res.pass .q-score b{background:linear-gradient(90deg,#FF5A1F,#FF8731,#FFC070,#FF8731,#FF5A1F);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:cueGrad 2.6s ease-in-out infinite alternate}
 @media (max-width:860px){.imm .net{bottom:calc(92px + env(safe-area-inset-bottom));font-size:13px}}
+
+/* TELEFONO: i video di sfondo sono già ritagliati in verticale con l'inquadratura giusta: niente spostamento */
+@media (max-width:760px){.imm .world video.layer,.imm .strip-vid{object-position:50% 50%}}
