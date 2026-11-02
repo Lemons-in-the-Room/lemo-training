@@ -66,6 +66,23 @@ export function buildCatalog() {
   return rows;
 }
 
+// Bandiere disegnate (le emoji 🇮🇹🇬🇧🇪🇸 su Windows compaiono come lettere "IT", "GB", "ES")
+const Flag = ({ lang }) => (
+  <svg viewBox="0 0 60 40" width="20" height="14" className="adm-flag" aria-hidden="true">
+    {lang === 'it' && <><rect width="20" height="40" fill="#009246" /><rect x="20" width="20" height="40" fill="#fff" /><rect x="40" width="20" height="40" fill="#CE2B37" /></>}
+    {lang === 'es' && <><rect width="60" height="40" fill="#AA151B" /><rect y="10" width="60" height="20" fill="#F1BF00" /></>}
+    {lang === 'en' && <>
+      <g>
+        <rect width="60" height="40" fill="#012169" />
+        <path d="M0 0L60 40M60 0L0 40" stroke="#fff" strokeWidth="8" />
+        <path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" strokeWidth="3" />
+        <path d="M30 0V40M0 20H60" stroke="#fff" strokeWidth="12" />
+        <path d="M30 0V40M0 20H60" stroke="#C8102E" strokeWidth="7" />
+      </g>
+    </>}
+  </svg>
+);
+
 const placeholders = (s) => (String(s || '').match(/\{\w+\}/g) || []).sort().join(',');
 
 export default function ContentSection() {
@@ -244,7 +261,7 @@ export default function ContentSection() {
                     return (
                       <div key={lang} className={`adm-text-col ${review ? 'review' : ''}`}>
                         <div className="adm-text-lang">
-                          <span>{name}{lang === 'it' && ' · fonte'}</span>
+                          <span className="flex items-center gap-2"><Flag lang={lang} />{name}{lang === 'it' && ' · fonte'}</span>
                           {review && <span className="text-amber-300 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> da ricontrollare</span>}
                         </div>
                         <textarea value={v} onChange={(e) => edit(r, lang, e.target.value)} rows={Math.min(8, Math.max(2, Math.ceil(String(v).length / 52)))} className="adm-input w-full" />
