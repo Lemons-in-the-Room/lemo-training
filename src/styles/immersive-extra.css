@@ -295,7 +295,7 @@
   /* telefono: sovrapposizione più corta, così la mongolfiera non compare in trasparenza sopra lo spazio */
   .imm .strip.has-vid .strip-space+.strip-img{margin-top:-40vh;-webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.45) 22vh,#000 40vh);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.45) 22vh,#000 40vh)}
   .imm .strip.has-vid .strip-space+.strip-img::before{height:40vh}
-  .imm .space-hero+.journey{padding-top:45vh}
+  .imm .space-hero+.journey{padding-top:25vh}
 }
 
 /* sfondi fermi: niente "respiro"/zoom lento, su molti PC produceva un tremolio orizzontale */
