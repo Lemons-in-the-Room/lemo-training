@@ -69,6 +69,7 @@ export function AccountProvider({ children }) {
   };
   const answerOnboarding = ({ prior, tablet }) => {
     const patch = { onboarding_answered_at: new Date().toISOString(), uses_tablet: !!tablet };
+    sessionStorage.setItem('lemo_onb_now', '1'); // in questa visita niente popup newsletter
     if (prior !== undefined) {
       patch.prior_onboarding = !!prior;
       if (prior) patch.completed_modules = [...new Set([...doneIds, ...lessons.map((l) => l.id)])];
@@ -76,6 +77,7 @@ export function AccountProvider({ children }) {
     return save(patch);
   };
   const setTablet = (v) => save({ uses_tablet: !!v });
+  const setNewsletter = (v) => save({ newsletter_opt_in: !!v });
   const saveQuizResult = (score, ok) => {
     const patch = { final_quiz_best_score: Math.max(score, profile?.final_quiz_best_score || 0) };
     if (ok && !passed) patch.final_quiz_passed_at = new Date().toISOString();
@@ -86,7 +88,7 @@ export function AccountProvider({ children }) {
     status, profile, lessons, total, doneIds, doneCount, nextIndex, allDone, passed, usesTablet,
     finalQuestions, passMark: passMark(finalQuestions.length), stopState, currentStop,
     needsOnboarding: status === 'ready' && !profile?.onboarding_answered_at,
-    completeLesson, answerOnboarding, setTablet, saveQuizResult,
+    completeLesson, answerOnboarding, setTablet, setNewsletter, saveQuizResult,
   };
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }

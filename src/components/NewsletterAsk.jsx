@@ -1,4 +1,7 @@
-// Proposta newsletter: una sola volta (finché l'operatore non risponde), solo dopo la prima tappa.
+// Proposta newsletter (regola decisa da Leonardo):
+// - solo in Home, 3 secondi dopo l'apertura;
+// - a ogni accesso alla Home finché l'operatore non risponde (Iscriviti oppure No grazie);
+// - non nella stessa visita in cui ha appena risposto alle domande del primo accesso.
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabase';
 import { useLang } from '../LanguageContext';
@@ -11,12 +14,11 @@ export default function NewsletterAsk() {
   const acc = useAccount();
   const [show, setShow] = useState(false);
   const [state, setState] = useState('idle');
-  const eligible = acc.profile && acc.profile.newsletter_opt_in == null && acc.doneCount >= 1
-    && !sessionStorage.getItem('lemo_nl_seen');
+  const eligible = !!acc.profile && acc.profile.newsletter_opt_in == null && !sessionStorage.getItem('lemo_onb_now');
 
   useEffect(() => {
     if (!eligible) return undefined;
-    const tm = setTimeout(() => { setShow(true); sessionStorage.setItem('lemo_nl_seen', '1'); }, 2500);
+    const tm = setTimeout(() => setShow(true), 3000);
     return () => clearTimeout(tm);
   }, [eligible]);
 
@@ -25,12 +27,12 @@ export default function NewsletterAsk() {
     if (yes) {
       setState('loading');
       await supabase.from('newsletter').upsert({ email: p.email }, { onConflict: 'email' });
-      await supabase.from('users').update({ newsletter_opt_in: true }).eq('id', p.id);
+      await acc.setNewsletter(true);
       setState('done');
       setTimeout(() => setShow(false), 2200);
     } else {
       setShow(false);
-      await supabase.from('users').update({ newsletter_opt_in: false }).eq('id', p.id);
+      await acc.setNewsletter(false);
     }
   };
 
