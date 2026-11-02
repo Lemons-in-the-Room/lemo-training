@@ -195,6 +195,55 @@ async function sendMail(t) {
   });
 }
 
+// ---------- Conferma all'operatore ----------
+const PHONE = '+39 348 758 9509';
+const CONFIRM = {
+  it: { subj: (c) => `Abbiamo ricevuto la tua richiesta · ${c}`, hi: (n) => `Ciao${n ? ' ' + n : ''},`, got: 'abbiamo ricevuto la tua richiesta di supporto. Il team Lemons la legge il prima possibile e la risolve entro 72 ore.',
+        code: 'Codice', subject: 'Oggetto', reply: 'Puoi rispondere a questa mail per aggiungere dettagli.', urgent: 'Per le urgenze chiama', open: 'Apri la piattaforma', sign: 'Il team Lemons in the room' },
+  en: { subj: (c) => `We received your request · ${c}`, hi: (n) => `Hi${n ? ' ' + n : ''},`, got: 'we have received your support request. The Lemons team reads it as soon as possible and resolves it within 72 hours.',
+        code: 'Code', subject: 'Subject', reply: 'You can reply to this email to add details.', urgent: 'For urgent issues call', open: 'Open the platform', sign: 'The Lemons in the room team' },
+  es: { subj: (c) => `Hemos recibido tu solicitud · ${c}`, hi: (n) => `Hola${n ? ' ' + n : ''},`, got: 'hemos recibido tu solicitud de soporte. El equipo de Lemons la lee lo antes posible y la resuelve en un máximo de 72 horas.',
+        code: 'Código', subject: 'Asunto', reply: 'Puedes responder a este correo para añadir detalles.', urgent: 'Para urgencias llama al', open: 'Abrir la plataforma', sign: 'El equipo de Lemons in the room' },
+};
+
+function buildConfirm(t) {
+  const L = CONFIRM[t.lang] || CONFIRM.it;
+  const html = `<!doctype html>
+<html lang="${t.lang || 'it'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(L.subj(t.code))}</title></head>
+<body style="margin:0;padding:0;background:#F3F1FA">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1FA;padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:20px;overflow:hidden">
+  <tr><td style="background:#03091B;padding:24px 28px"><img src="${LOGO}" alt="Lemons in the room" width="150" style="display:block;border:0"></td></tr>
+  <tr><td style="padding:28px">
+    <p style="margin:0 0 12px;font:700 20px/1.3 Arial,Helvetica,sans-serif;color:#151233">${esc(L.hi(t.firstName))}</p>
+    <p style="margin:0 0 20px;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">${L.got}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F7FD;border-left:4px solid #FF8731;border-radius:0 14px 14px 0">
+      <tr><td style="padding:14px 18px;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0;text-transform:uppercase;letter-spacing:.06em">${L.code}</td><td style="padding:14px 18px;font:700 15px Arial,Helvetica,sans-serif;color:#151233">${esc(t.code)}</td></tr>
+      <tr><td style="padding:0 18px 14px;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0;text-transform:uppercase;letter-spacing:.06em">${L.subject}</td><td style="padding:0 18px 14px;font:600 15px/1.4 Arial,Helvetica,sans-serif;color:#151233">${esc(t.subject)}</td></tr>
+    </table>
+    <p style="margin:20px 0 6px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">${L.reply}</p>
+    <p style="margin:0 0 24px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">${L.urgent} <a href="tel:${PHONE.replace(/\s/g, '')}" style="color:#6A3FE0;font-weight:700;text-decoration:none">${PHONE}</a>.</p>
+    <a href="${SITE}/supporto" style="display:inline-block;padding:13px 22px;border-radius:12px;background:#FF8731;font:700 14px Arial,Helvetica,sans-serif;color:#FFFFFF;text-decoration:none">${L.open}</a>
+    <p style="margin:28px 0 0;font:600 14px/1.5 Arial,Helvetica,sans-serif;color:#151233">${L.sign}</p>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+  const text = [L.hi(t.firstName), '', L.got, '', `${L.code}: ${t.code}`, `${L.subject}: ${t.subject}`, '', L.reply, `${L.urgent} ${PHONE}.`, '', `${SITE}/supporto`, '', L.sign].join('\n');
+  return { subject: L.subj(t.code), html, text };
+}
+
+async function sendConfirm(t) {
+  if (!t.email || !SMTP_USER || !SMTP_PASS) return;
+  const transporter = nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } });
+  const m = buildConfirm(t);
+  await transporter.sendMail({
+    from: { name: 'Lemons in the room · Support', address: SMTP_USER },
+    to: t.email,
+    replyTo: TICKET_TO.join(', '),
+    subject: m.subject, html: m.html, text: m.text,
+    headers: { 'X-Lemons-Ticket': t.code },
+  });
+}
+
 // ---------- Handler ----------
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -249,7 +298,10 @@ export default async function handler(req, res) {
   }
 
   if (!mailOk && !notionOk) return res.status(500).json({ error: 'All delivery methods failed' });
+
+  // conferma all'operatore: se non parte, il ticket resta comunque aperto
+  try { await sendConfirm(t); } catch (e) { console.error('conferma', e.message); }
   return res.status(200).json({ ok: true, code: t.code, mail: mailOk, notion: notionOk });
 }
 
-export { buildMail };
+export { buildMail, buildConfirm };

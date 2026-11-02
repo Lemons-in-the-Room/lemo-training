@@ -67,6 +67,7 @@ export default function LessonPage() {
     const t2 = setTimeout(top, 250), t3 = setTimeout(top, 600);
     return () => { [t1, t2, t3].forEach(clearTimeout); removeEventListener('touchstart', mark); removeEventListener('wheel', mark); };
   }, [i]);
+  useEffect(() => { if (m) document.title = `${m.title} · Lemons in the room · Training`; }, [m]);
   if (!m || acc.stopState(i) === 'locked') return <Navigate to="/formazione" replace />;
   const done = acc.stopState(i) === 'done';
   const last = i + 1 >= acc.total;

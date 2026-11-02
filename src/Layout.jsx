@@ -4,6 +4,7 @@ import { useLang } from './LanguageContext';
 import { supabase } from './utils/supabase';
 import { AccountProvider, useAccount } from './account';
 import ChatWidget from './components/ChatWidget';
+import NetStatus from './components/NetStatus';
 import { Ico, IMG, cancelGlide } from './imm/kit';
 import './styles/immersive.css';
 import './styles/immersive-extra.css';
@@ -122,6 +123,7 @@ function Shell() {
       </nav>
 
       {!onb && acc.status === 'ready' && <ChatWidget />}
+      <NetStatus />
 
       {askLogout && (
         <div className="modal" role="dialog" aria-modal="true" aria-labelledby="lo-t" onClick={(e) => { if (e.target === e.currentTarget) setAskLogout(false); }}>

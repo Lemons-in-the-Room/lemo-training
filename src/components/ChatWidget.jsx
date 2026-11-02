@@ -22,6 +22,15 @@ const ChatWidget = () => {
   // il fumetto compare solo dove non copre lezioni e verifica
   const nudgeHere = pathname === '/home' || pathname === '/supporto';
   const [open, setOpen] = useState(false);
+  // risposte arrivate mentre l'operatore era su un'altra scheda: "(1) " davanti al titolo finché non torna
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    const clean = () => document.title.replace(/^\(\d+\) /, '');
+    document.title = unread ? `(${unread}) ${clean()}` : clean();
+    const back = () => { if (!document.hidden) setUnread(0); };
+    document.addEventListener('visibilitychange', back);
+    return () => document.removeEventListener('visibilitychange', back);
+  }, [unread]);
   const [nudge, setNudge] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -76,6 +85,7 @@ const ChatWidget = () => {
       setMessages((m) => [...m, { role: 'assistant', text: err.message || tx.error, error: true, answered: false }]);
     } finally {
       setLoading(false);
+      if (document.hidden) setUnread((n) => n + 1); // risposta arrivata mentre era su un'altra scheda
     }
   };
 

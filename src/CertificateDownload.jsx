@@ -20,7 +20,7 @@ const CertificateDownload = ({ user, date, className = 'btn btn-accent big', lab
     const { default: html2pdf } = await import('html2pdf.js');
     html2pdf().set({
       margin: 0,
-      filename: `Certificato_Lemons_${user?.lastName || 'Utente'}.pdf`,
+      filename: `${['Certificato Lemons', user?.name || user?.lastName || 'Operatore', user?.hospital].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim()}.pdf`,
       image: { type: 'jpeg', quality: 1 },
       html2canvas: { scale: 2, useCORS: true, logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },

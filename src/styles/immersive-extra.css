@@ -325,3 +325,27 @@
   .imm .arrival>:not(.node){grid-column:2}
   .imm .arrival h2{margin-top:8px}
 }
+
+/* selezione del testo nei colori Lemons */
+.imm ::selection{background:#FF8731;color:#03091B}
+
+/* avviso connessione */
+.imm .net{position:fixed;z-index:80;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);
+  padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;color:#fff;background:#1A1030;box-shadow:0 12px 30px rgba(0,0,0,.4);animation:netIn .35s var(--spring,ease) both}
+.imm .net.off{background:#B4231A}
+.imm .net.back{background:#1F8A5B}
+.imm .net .i{width:18px;height:18px;flex:none}
+@keyframes netIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* pagina non trovata */
+.imm.nf .top{position:absolute}
+.imm .nf-in{min-height:100svh;align-items:center}
+.imm .nf-code{font:700 clamp(64px,10vw,120px)/1 'Recoleta Alt',serif;background:linear-gradient(90deg,#FF5A1F,#FF8731,#FFC070);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:6px}
+.imm.nf h1{font-size:clamp(34px,5vw,64px);margin-bottom:14px}
+.imm.nf .lead{margin-bottom:28px;max-width:46ch}
+
+/* verifica superata: la mascotte arriva a festeggiare, il punteggio brilla */
+.imm .q-mascot{width:110px;height:auto;margin-bottom:-6px;filter:drop-shadow(0 12px 20px rgba(3,9,27,.5));animation:mascotIn .9s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes mascotIn{0%{opacity:0;transform:translateY(40px) scale(.6) rotate(-12deg)}60%{opacity:1;transform:translateY(-8px) scale(1.06) rotate(4deg)}100%{transform:none}}
+.imm .q-res.pass .q-score b{background:linear-gradient(90deg,#FF5A1F,#FF8731,#FFC070,#FF8731,#FF5A1F);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:cueGrad 2.6s ease-in-out infinite alternate}
+@media (max-width:860px){.imm .net{bottom:calc(92px + env(safe-area-inset-bottom));font-size:13px}}

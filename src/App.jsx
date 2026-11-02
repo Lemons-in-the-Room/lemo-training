@@ -11,15 +11,20 @@ const FinalQuiz  = lazy(() => import('./pages/FinalQuiz'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const Admin      = lazy(() => import('./Admin'));
+const NotFound   = lazy(() => import('./pages/NotFound'));
 
 // Titolo nella scheda del browser: Formazione -> Training, Supporto -> Support, il resto -> Training & Support
 const BRAND = 'Lemons in the room';
 function PageTitle() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const part = pathname.startsWith('/formazione') || pathname.startsWith('/verifica') ? 'Training'
-      : pathname.startsWith('/supporto') ? 'Support' : 'Training & Support';
-    document.title = `${BRAND} · ${part}`;
+    const training = pathname.startsWith('/formazione') || pathname.startsWith('/verifica');
+    const support = pathname.startsWith('/supporto');
+    // nelle lezioni il titolo lo imposta LessonPage (nome della tappa)
+    if (!/^\/formazione\/\d+/.test(pathname)) document.title = `${BRAND} · ${training ? 'Training' : support ? 'Support' : 'Training & Support'}`;
+    // colore della barra del telefono (Android) intonato allo sfondo in cima alla pagina
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', training ? '#07051A' : support ? '#1A1030' : '#03091B');
   }, [pathname]);
   return null;
 }
@@ -45,7 +50,7 @@ function App() {
             {/* indirizzi della versione precedente */}
             <Route path="/modules" element={<Navigate to="/formazione" replace />} />
             <Route path="/support" element={<Navigate to="/supporto" replace />} />
-            <Route path="*" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useLang } from '../LanguageContext';
 import { useAccount } from '../account';
 import { fmt } from '../i18n/ui';
-import { Cue, Ico, Split, World, useReveal } from '../imm/kit';
+import { Cue, Ico, IMG, Split, World, useReveal } from '../imm/kit';
 
 const shuffle = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((v) => v[1]);
 
@@ -68,6 +68,7 @@ export default function FinalQuiz() {
           ) : (
             <>
               <div className={`q-res ${ok ? 'pass' : 'fail'}`}>
+                {ok && <img className="q-mascot" src={IMG.mascot} alt="" width="230" height="284" />}
                 <div className="q-score"><b>{score}</b><span>{fmt(Q.of, { n: qs.length })}</span></div>
                 <h3>{ok ? Q.pass : Q.fail}</h3>
                 <p>{ok ? (wrong.length ? Q.passWrong : Q.passAll) : fmt(Q.failText, { p: PASS })}</p>
