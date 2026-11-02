@@ -131,3 +131,15 @@
   .adm-tabs button span:not(.adm-tab-bg){display:none}
   .adm-tabs button.on span:not(.adm-tab-bg){display:inline}
 }
+
+/* ---------------- CONTENUTI ---------------- */
+.adm-content{padding:0 28px 28px;display:flex;flex-direction:column;gap:12px}
+.adm-content-sec{margin:22px 0 4px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#FF8731}
+.adm-text{padding:18px 20px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.adm-text.changed{border-color:rgba(135,86,250,.45)}
+.adm-text-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px;color:#fff}
+.adm-text-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.adm-text-col .adm-input{resize:vertical;font-weight:500;line-height:1.5}
+.adm-text-col.review .adm-input{border-color:rgba(251,191,36,.55)}
+.adm-text-lang{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+@media (max-width:1100px){.adm-text-grid{grid-template-columns:1fr}}

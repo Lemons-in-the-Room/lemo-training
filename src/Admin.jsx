@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, Award, ClipboardCheck, Tablet, PlayCircle, Search, Download, RefreshCw, ChevronDown, ChevronUp,
   ChevronLeft, ChevronRight, X, AlertTriangle, RotateCcw, Unlock, Trash2, ShieldCheck, ShieldOff, ArrowUpDown,
-  Building2, Baby, UserRound, LayoutDashboard, MessageCircle, Mail, LogOut, ExternalLink, Check, Eye, EyeOff,
+  Building2, Baby, UserRound, LayoutDashboard, MessageCircle, Mail, LogOut, ExternalLink, Check, Eye, EyeOff, Languages,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -11,6 +11,7 @@ import { supabase } from './utils/supabase';
 import itText from './i18n/lang-it';
 import { getLessons, profileOf } from './course';
 import KnowledgeSection from './components/KnowledgeSection';
+import ContentSection from './components/ContentSection';
 import CatalogSection from './components/CatalogSection';
 import './styles/admin.css';
 
@@ -578,6 +579,7 @@ const TABS = [
   ['panoramica', 'Panoramica', LayoutDashboard],
   ['operatori', 'Operatori', Users],
   ['ospedali', 'Ospedali', Building2],
+  ['contenuti', 'Contenuti', Languages],
   ['chatbot', 'Chatbot', MessageCircle],
   ['email', 'Email', Mail],
 ];
@@ -720,6 +722,7 @@ const Admin = () => {
             {tab === 'panoramica' && <Overview users={users} onPick={(s) => goOperators(s)} />}
             {tab === 'operatori' && <Operators users={users} actions={actions} status={opStatus} setStatus={setOpStatus} hosp={opHosp} setHosp={setOpHosp} />}
             {tab === 'ospedali' && <Hospitals users={users} onOpenHospital={(h) => goOperators('all', h)} />}
+            {tab === 'contenuti' && <ContentSection />}
             {tab === 'chatbot' && <KnowledgeSection />}
             {tab === 'email' && <EmailTab users={users} />}
           </motion.div>
