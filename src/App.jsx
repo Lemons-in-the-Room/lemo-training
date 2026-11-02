@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, Suspense, lazy } from 'react';
 import Layout from './Layout';
 import { LanguageProvider } from './LanguageContext';
@@ -12,11 +12,24 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const Admin      = lazy(() => import('./Admin'));
 
+// Titolo nella scheda del browser: Formazione -> Training, Supporto -> Support, il resto -> Training & Support
+const BRAND = 'Lemons in the room';
+function PageTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const part = pathname.startsWith('/formazione') || pathname.startsWith('/verifica') ? 'Training'
+      : pathname.startsWith('/supporto') ? 'Support' : 'Training & Support';
+    document.title = `${BRAND} · ${part}`;
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   useEffect(() => { if (window.__hideSplash) window.__hideSplash(); }, []);
   return (
     <LanguageProvider>
       <BrowserRouter>
+        <PageTitle />
         <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Access />} />
