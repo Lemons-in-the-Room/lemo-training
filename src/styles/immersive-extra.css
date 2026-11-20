@@ -356,3 +356,10 @@
 /* HOME: la persona col visore resta inquadrata. PC: se lo schermo è largo e basso si taglia il fondo, non la testa.
    Telefono: video verticale già centrato su di lei (hero-m.mp4). */
 @media (min-width:761px){.imm .world video.layer[src*="hero"]{object-position:50% 22%}}
+
+/* messaggi del certificato */
+.imm .cert-msg{display:inline-block;margin:14px 0 0;max-width:44ch;padding:10px 16px;border-radius:16px;background:rgba(3,9,27,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-size:14px;line-height:1.45;font-weight:600;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.imm .cert-msg.ok{border-left:3px solid #3DDC97}
+.imm .cert-msg.err{border-left:3px solid #FF6B57}
+@media (max-width:760px){.imm .cert-msg{max-width:calc(100% - 76px);margin-right:76px;text-align:left}}
+.imm .cert-copy{margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer}

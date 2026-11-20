@@ -9,6 +9,7 @@ export const ui = {
     nav: { home: 'Home', training: 'Formazione', support: 'Supporto', lang: 'Lingua', site: 'Visita il sito', logout: 'Esci', admin: 'Admin' },
     logout: { title: 'Vuoi uscire?', text: 'Il tuo avanzamento resta salvato.', yes: 'Esci', no: 'Annulla' },
     net: { off: 'Sei offline. Riprendo da solo appena torna la rete.', on: 'Connessione tornata.' },
+    cert: { preparing: 'Preparo il certificato…', ready: 'Certificato pronto: tocca per salvarlo', saved: 'Certificato salvato. Lo trovi nei Download del telefono.', savedPc: 'Certificato scaricato.', savedIos: 'Fatto. Se hai scelto «Salva su File», lo trovi nell\'app File.', inApp: 'Questa app non permette di salvare file. Apri la pagina in Chrome o Safari e riprova.', copy: 'Copia il link', copied: 'Link copiato', open: 'Apri il certificato', error: 'Non sono riuscito a creare il certificato. Riprova tra un attimo.' },
     notFound: { title: 'Questa pagina non esiste.', text: "L'indirizzo potrebbe essere sbagliato o non più attivo. Il tuo percorso è al sicuro.", back: 'Torna alla piattaforma' },
     cue: { scroll: 'Scorri', start: 'Parti', resume: 'Riprendi', final: 'Verifica finale', finish: 'Traguardo', watch: 'Guarda', begin: 'Inizia' },
     home: {
@@ -87,6 +88,7 @@ export const ui = {
     nav: { home: 'Home', training: 'Training', support: 'Support', lang: 'Language', site: 'Visit the website', logout: 'Log out', admin: 'Admin' },
     logout: { title: 'Log out?', text: 'Your progress stays saved.', yes: 'Log out', no: 'Cancel' },
     net: { off: "You're offline. I'll pick up again as soon as the connection is back.", on: 'Back online.' },
+    cert: { preparing: 'Preparing your certificate…', ready: 'Certificate ready: tap to save it', saved: 'Certificate saved. You will find it in your phone Downloads.', savedPc: 'Certificate downloaded.', savedIos: 'Done. If you chose “Save to Files”, you will find it in the Files app.', inApp: 'This app cannot save files. Open the page in Chrome or Safari and try again.', copy: 'Copy the link', copied: 'Link copied', open: 'Open the certificate', error: 'I could not create the certificate. Please try again in a moment.' },
     notFound: { title: "This page doesn't exist.", text: 'The address may be wrong or no longer active. Your progress is safe.', back: 'Back to the platform' },
     cue: { scroll: 'Scroll', start: 'Start', resume: 'Resume', final: 'Final test', finish: 'Finish line', watch: 'Watch', begin: 'Start' },
     home: {
@@ -165,6 +167,7 @@ export const ui = {
     nav: { home: 'Inicio', training: 'Formación', support: 'Soporte', lang: 'Idioma', site: 'Visita la web', logout: 'Salir', admin: 'Admin' },
     logout: { title: '¿Quieres salir?', text: 'Tu progreso queda guardado.', yes: 'Salir', no: 'Cancelar' },
     net: { off: 'Sin conexión. Continúo solo en cuanto vuelva la red.', on: 'Conexión restablecida.' },
+    cert: { preparing: 'Preparando el certificado…', ready: 'Certificado listo: toca para guardarlo', saved: 'Certificado guardado. Lo encontrarás en las Descargas del teléfono.', savedPc: 'Certificado descargado.', savedIos: 'Listo. Si elegiste «Guardar en Archivos», lo encontrarás en la app Archivos.', inApp: 'Esta app no permite guardar archivos. Abre la página en Chrome o Safari e inténtalo de nuevo.', copy: 'Copiar el enlace', copied: 'Enlace copiado', open: 'Abrir el certificado', error: 'No he podido crear el certificado. Inténtalo de nuevo en un momento.' },
     notFound: { title: 'Esta página no existe.', text: 'La dirección puede ser incorrecta o ya no estar activa. Tu progreso está a salvo.', back: 'Volver a la plataforma' },
     cue: { scroll: 'Desliza', start: 'Empieza', resume: 'Continuar', final: 'Prueba final', finish: 'Meta', watch: 'Mira', begin: 'Empieza' },
     home: {
