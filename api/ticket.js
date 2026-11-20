@@ -77,13 +77,11 @@ function ticketCode(d) {
   return `LT-${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}-${rnd}`;
 }
 
-function buildMail(t, me) {
+function buildMail(t) {
   const tech = t.ticketType === 'Tecnico';
   const accent = t.ticketType === 'Operativo' ? '#8756FA' : '#FF8731';
   const typeLabel = !t.ticketType ? 'Richiesta di supporto' : tech ? 'Tecnico · Guasto hardware o sistema' : 'Operativo · App o formazione';
-  // "Rispondi": oggetto già pronto e in copia gli altri del team (chi riceve la mail non è in copia a se stesso)
-  const others = TICKET_TO.filter((a) => a.toLowerCase() !== String(me || '').toLowerCase());
-  const replyHref = `mailto:${t.email || ''}?subject=${encodeURIComponent(`Re: ${t.subject} · ${t.code}`)}${others.length ? `&cc=${others.join(',')}` : ''}`;
+  const replySubject = encodeURIComponent(`Re: [${t.code}] ${t.subject}`);
   const row = (label, value) => value ? `
       <tr>
         <td style="padding:10px 0;border-bottom:1px solid #EEEAF7;width:150px;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0;text-transform:uppercase;letter-spacing:.06em;vertical-align:top">${label}</td>
@@ -141,7 +139,7 @@ function buildMail(t, me) {
 
     <tr><td style="padding:18px 32px 26px">
       <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-        ${t.email ? button(esc(replyHref), `Rispondi a ${esc(t.firstName || 'operatore')}`, '#FF8731') : ''}
+        ${t.email ? button(`mailto:${esc(t.email)}?subject=${replySubject}`, `Rispondi a ${esc(t.firstName || 'operatore')}`, '#FF8731') : ''}
         ${t.notionUrl ? button(esc(t.notionUrl), 'Apri su Notion', '#FFFFFF', '#151233', '#DAD6EA') : ''}
         ${t.phone ? button(`tel:${esc(t.phone.replace(/\s/g, ''))}`, 'Chiama', '#FFFFFF', '#151233', '#DAD6EA') : ''}
       </tr></table>
@@ -184,26 +182,17 @@ async function sendMail(t) {
     host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
-  // una mail per persona: così il "Rispondi" di ciascuno mette in copia gli altri del team
-  let sent = 0;
-  for (const me of TICKET_TO) {
-    const m = buildMail(t, me);
-    const others = TICKET_TO.filter((a) => a !== me);
-    try {
-      await transporter.sendMail({
-        from: { name: '⚠️ TICKET LEMO', address: SMTP_USER },
-        priority: 'high',
-        to: me,
-        replyTo: t.email ? [{ name: t.name, address: t.email }, ...others] : undefined,
-        subject: m.subject,
-        html: m.html,
-        text: m.text,
-        headers: { 'X-Lemons-Ticket': t.code },
-      });
-      sent++;
-    } catch (e) { console.error('mail a', me, e.message); }
-  }
-  if (!sent) throw new Error('Nessuna mail partita');
+  const m = buildMail(t);
+  await transporter.sendMail({
+    from: { name: '⚠️ TICKET LEMO', address: SMTP_USER },
+    priority: 'high',
+    to: TICKET_TO,
+    replyTo: t.email ? { name: t.name, address: t.email } : undefined,
+    subject: m.subject,
+    html: m.html,
+    text: m.text,
+    headers: { 'X-Lemons-Ticket': t.code },
+  });
 }
 
 // ---------- Conferma all'operatore ----------
