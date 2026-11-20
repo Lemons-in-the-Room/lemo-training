@@ -2,34 +2,41 @@
 // POST /api/chat — chatbot di supporto Lemons.
 // - Solo utenti loggati (token Supabase nell'header Authorization).
 // - Legge il pacchetto conoscenza aggiornato (moduli + FAQ + base di conoscenza admin).
-// - Risponde con Gemini nella lingua dell'utente; registra la domanda in chat_logs.
+// - Risponde con Claude (Haiku) nella lingua dell'utente; registra la domanda in chat_logs.
 import { createClient } from '@supabase/supabase-js';
 import { supabaseUrl, supabaseAnonKey } from '../src/utils/supabase.js';
 import { getKnowledge } from './_knowledge.js';
+import { CLAUDE_KEY, claudeTool } from './_claude.js';
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+const CHAT_MODEL = process.env.CHAT_MODEL || 'claude-haiku-5-5';
 const LIMIT_PER_HOUR = Number(process.env.CHAT_LIMIT_PER_HOUR || 30);
 const MAX_QUESTION = 1000;
 
 const LANG_NAMES = { it: 'italiano', en: 'English', es: 'español' };
 
-const SYSTEM = (knowledge, langName, profile) => `
-Sei l'assistente di supporto di Lemons in the Room per gli operatori sanitari che usano i visori VR LEMO in ospedale.
+const RULES = (langName, profile) => `
+Sei l'assistente di supporto di Lemons in the Room per gli operatori sanitari che usano i visori VR LEMO in ospedale. Dai del tu.
 Rispondi nella STESSA lingua in cui l'utente scrive la domanda (qualsiasi lingua), anche se le fonti sono in italiano. Solo se la lingua della domanda non è chiara, rispondi in ${langName}.
 
 REGOLE
-1. Usa SOLO le informazioni nella CONOSCENZA qui sotto. Se la risposta non c'è, dillo chiaramente, imposta "answered": false e suggerisci di aprire un ticket dalla pagina Supporto. Non inventare procedure, numeri, tempi o impostazioni.
+1. Usa SOLO le informazioni nella CONOSCENZA (sopra). Se la risposta non c'è, dillo chiaramente, imposta "answered": false e suggerisci di aprire un ticket dalla pagina Supporto. Non inventare procedure, numeri, tempi o impostazioni.
 2. Se moduli e "BASE DI CONOSCENZA DEL TEAM" sono in conflitto, vale la voce più recente della base di conoscenza.
 3. Niente consigli clinici o medici (diagnosi, indicazioni, controindicazioni sul paziente): per questi rimanda al medico/personale sanitario responsabile.
 4. Se l'utente scrive dati di un paziente, non riportarli e ricordagli di non inserirli.
-5. Risposte brevi e operative: passi numerati quando serve, max ~120 parole.
+5. Risposte brevi e operative: passi numerati quando serve, max ~120 parole. Testo semplice, al massimo **grassetto**.
 6. In "sources" elenca i titoli delle fonti usate (es. "Modulo Sanificazione", "FAQ: Il visore non si ricarica", "KB: Wi-Fi Careggi").
 ${profile ? `L'operatore segue il percorso formativo: ${profile}.` : ''}
-
-CONOSCENZA
-${knowledge}
 `.trim();
+
+const SCHEMA = {
+  type: 'object',
+  properties: {
+    answer: { type: 'string', description: "La risposta per l'operatore" },
+    sources: { type: 'array', items: { type: 'string' }, description: 'Titoli delle fonti usate' },
+    answered: { type: 'boolean', description: 'false se la risposta non è nella conoscenza' },
+  },
+  required: ['answer', 'sources', 'answered'],
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -58,7 +65,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Hai raggiunto il limite di messaggi per quest\'ora. Riprova più tardi o apri un ticket.' });
   }
 
-  if (!GEMINI_KEY) return res.status(503).json({ error: 'Chatbot non ancora configurato (manca GEMINI_API_KEY).' });
+  if (!CLAUDE_KEY) return res.status(503).json({ error: 'Chatbot non ancora configurato (manca ANTHROPIC_API_KEY).' });
 
   let knowledge;
   try { knowledge = await getKnowledge(db); }
@@ -67,41 +74,28 @@ export default async function handler(req, res) {
   const { data: profileRow } = await db.from('users').select('patient_type').eq('id', userId).maybeSingle();
   const langName = LANG_NAMES[lang] || lang;
 
-  const contents = [
-    ...(Array.isArray(history) ? history.slice(-6) : [])
-      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && m.text)
-      .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.text).slice(0, 1500) }] })),
-    { role: 'user', parts: [{ text: q }] },
-  ];
+  // Claude vuole messaggi alternati utente/assistente che iniziano dall'utente
+  const past = (Array.isArray(history) ? history.slice(-6) : [])
+    .filter(m => m && (m.role === 'user' || m.role === 'assistant') && m.text)
+    .map(m => ({ role: m.role, content: String(m.text).slice(0, 1500) }));
+  const messages = [];
+  for (const m of [...past, { role: 'user', content: q }]) {
+    if (!messages.length && m.role !== 'user') continue;
+    if (messages.length && messages[messages.length - 1].role === m.role) messages[messages.length - 1].content += '\n\n' + m.content;
+    else messages.push({ ...m });
+  }
 
   let out;
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM(knowledge, langName, profileRow?.patient_type) }] },
-        contents,
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 800,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'OBJECT',
-            properties: {
-              answer: { type: 'STRING' },
-              sources: { type: 'ARRAY', items: { type: 'STRING' } },
-              answered: { type: 'BOOLEAN' },
-            },
-            required: ['answer', 'sources', 'answered'],
-          },
-        },
-      }),
+    out = await claudeTool({
+      model: CHAT_MODEL,
+      cached: `CONOSCENZA\n${knowledge}`,
+      system: RULES(langName, profileRow?.patient_type),
+      messages,
+      schema: SCHEMA,
+      description: "Rispondi all'operatore.",
+      maxTokens: 800,
     });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j?.error?.message || `HTTP ${r.status}`);
-    const text = j?.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
-    out = JSON.parse(text);
   } catch (e) {
     return res.status(502).json({ error: 'Il servizio AI non ha risposto. Riprova tra poco.', detail: e.message });
   }

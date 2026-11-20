@@ -7,7 +7,7 @@ import es from '../i18n/lang-es';
 import { ui } from '../i18n/ui';
 
 // Scheda "Contenuti": tutti i testi della piattaforma.
-// L'italiano è la fonte: modificandolo, inglese e spagnolo vengono ritradotti (Gemini) e segnati "da ricontrollare".
+// L'italiano è la fonte: modificandolo, inglese e spagnolo vengono ritradotti (Claude Sonnet) e segnati "da ricontrollare".
 // Le traduzioni si possono correggere a mano. Nel database (content_strings) finiscono solo i testi modificati.
 const LANGS = [['it', 'Italiano'], ['en', 'English'], ['es', 'Español']];
 

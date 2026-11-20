@@ -4,9 +4,9 @@
 // Il salvataggio nel database lo fa la dashboard (permessi admin via RLS): qui nessuna scrittura.
 import { createClient } from '@supabase/supabase-js';
 import { supabaseUrl, supabaseAnonKey } from '../src/utils/supabase.js';
+import { CLAUDE_KEY, claudeTool } from './_claude.js';
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || 'claude-sonnet-5-5';
 const NAMES = { en: 'English', es: 'Spanish (Spain)' };
 const MAX_ITEMS = 60;
 
@@ -22,27 +22,28 @@ Rules:
 - Short UI labels (buttons, menu items) must stay short.
 - The "key" only gives context (where the text appears); do not translate it.
 
-Return ONLY a JSON object mapping each key to its translation.
+Return one translation for every key, using the tool.
 
 Texts:
 ${JSON.stringify(Object.fromEntries(items.map((i) => [i.key, i.it])), null, 1)}
 `.trim();
 
 async function translate(target, items) {
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: PROMPT(target, items) }] }],
-      generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
-    }),
+  const out = await claudeTool({
+    model: TRANSLATE_MODEL,
+    messages: [{ role: 'user', content: PROMPT(target, items) }],
+    schema: {
+      type: 'object',
+      properties: { translations: { type: 'array', items: { type: 'object', properties: { key: { type: 'string' }, text: { type: 'string' } }, required: ['key', 'text'] } } },
+      required: ['translations'],
+    },
+    name: 'traduzioni',
+    description: 'Restituisci una traduzione per ogni chiave ricevuta.',
+    maxTokens: 8000,
   });
-  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 200)}`);
-  const j = await r.json();
-  const text = j.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '{}';
-  const out = JSON.parse(text);
   const res = {};
-  for (const { key } of items) if (typeof out[key] === 'string') res[key] = out[key];
+  const wanted = new Set(items.map((i) => i.key));
+  for (const { key, text } of out.translations || []) if (wanted.has(key) && typeof text === 'string') res[key] = text;
   return res;
 }
 
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
   });
   const { data: isAdmin, error } = await db.rpc('is_admin');
   if (error || isAdmin !== true) return res.status(403).json({ error: 'Solo per gli amministratori' });
-  if (!GEMINI_KEY) return res.status(503).json({ error: 'Manca GEMINI_API_KEY' });
+  if (!CLAUDE_KEY) return res.status(503).json({ error: 'Manca ANTHROPIC_API_KEY' });
 
   const { items = [], targets = ['en', 'es'] } = req.body || {};
   const list = (Array.isArray(items) ? items : [])
