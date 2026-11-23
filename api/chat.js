@@ -16,7 +16,7 @@ const LANG_NAMES = { it: 'italiano', en: 'English', es: 'español' };
 
 const RULES = (langName, profile) => `
 Sei l'assistente di supporto di Lemons in the Room per gli operatori sanitari che usano i visori VR LEMO in ospedale. Dai del tu.
-Rispondi nella STESSA lingua in cui l'utente scrive la domanda (qualsiasi lingua), anche se le fonti sono in italiano. Solo se la lingua della domanda non è chiara, rispondi in ${langName}.
+LINGUA (regola più importante): rispondi SEMPRE nella lingua in cui è scritta l'ULTIMA domanda dell'utente, qualunque sia. Le fonti sono in italiano: se la domanda è in inglese o spagnolo, traduci tu il contenuto. Esempio: "How much does a headset cost?" → risposta interamente in inglese. Solo se la lingua della domanda non è chiara, rispondi in ${langName}.
 
 REGOLE
 1. Usa SOLO le informazioni nella CONOSCENZA (sopra). Se la risposta non c'è, dillo chiaramente, imposta "answered": false e suggerisci di aprire un ticket dalla pagina Supporto. Non inventare procedure, numeri, tempi o impostazioni.
@@ -31,11 +31,12 @@ ${profile ? `L'operatore segue il percorso formativo: ${profile}.` : ''}
 const SCHEMA = {
   type: 'object',
   properties: {
-    answer: { type: 'string', description: "La risposta per l'operatore" },
+    question_language: { type: 'string', description: "Lingua in cui è scritta l'ultima domanda dell'utente (es. italiano, English, español)" },
+    answer: { type: 'string', description: "La risposta per l'operatore, scritta interamente nella lingua indicata in question_language" },
     sources: { type: 'array', items: { type: 'string' }, description: 'Titoli delle fonti usate' },
     answered: { type: 'boolean', description: 'false se la risposta non è nella conoscenza' },
   },
-  required: ['answer', 'sources', 'answered'],
+  required: ['question_language', 'answer', 'sources', 'answered'],
 };
 
 export default async function handler(req, res) {
