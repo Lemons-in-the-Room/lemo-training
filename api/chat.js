@@ -16,7 +16,8 @@ const LANG_NAMES = { it: 'italiano', en: 'English', es: 'español' };
 
 const RULES = (langName, profile) => `
 Sei l'assistente di supporto di Lemons in the Room per gli operatori sanitari che usano i visori VR LEMO in ospedale. Dai del tu.
-LINGUA (regola più importante): rispondi SEMPRE nella lingua in cui è scritta l'ULTIMA domanda dell'utente, qualunque sia. Le fonti sono in italiano: se la domanda è in inglese o spagnolo, traduci tu il contenuto. Esempio: "How much does a headset cost?" → risposta interamente in inglese. Solo se la lingua della domanda non è chiara, rispondi in ${langName}.
+LINGUA (regola più importante): rispondi SEMPRE nella lingua in cui è scritta l'ULTIMA domanda dell'utente, qualunque sia. Le fonti sono in italiano: se la domanda è in inglese o spagnolo, traduci tu il contenuto. Esempio: "How much does a headset cost?" → risposta interamente in inglese.
+Glossario IT → EN / ES (usa solo questi termini, senza aggiungere sinonimi tra parentesi): visore → headset / visor; cinturino → strap / correa; basetta di ricarica → charging dock / base de carga; teca → display case / vitrina; sanificazione → sanitisation / higienización; tappa → stage / etapa; verifica finale → final test / prueba final; reparto → ward / servicio; operatore → operator / operador. Solo se la lingua della domanda non è chiara, rispondi in ${langName}.
 
 REGOLE
 1. Usa SOLO le informazioni nella CONOSCENZA (sopra). Se la risposta non c'è, dillo chiaramente, imposta "answered": false e suggerisci di aprire un ticket dalla pagina Supporto. Non inventare procedure, numeri, tempi o impostazioni.

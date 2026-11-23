@@ -18,7 +18,7 @@ Rules:
 - Natural, clear, professional tone, the same register as the Italian (informal "tu" in Italian -> informal in Spanish "tú"; plain direct English).
 - Keep EXACTLY unchanged: placeholders in curly braces like {n} {m} {name}, markdown (**bold**), line breaks, emoji, numbers, URLs, e-mail addresses.
 - Never translate these names: Lemons in the Room, Lemons, LEMO, Lemo Jr, Rabbits, Telly, Meta Quest, Quest, Wi-Fi.
-- Glossary IT -> EN / ES: visore -> headset / visor; teca -> display case / vitrina; basetta di ricarica -> charging dock / base de carga; sanificazione -> sanitisation / higienización; tappa -> stage / etapa; verifica finale -> final test / prueba final; reparto -> ward / servicio; operatore -> operator / operador.
+- Glossary IT -> EN / ES: visore -> headset / visor; teca -> display case / vitrina; basetta di ricarica -> charging dock / base de carga; sanificazione -> sanitisation / higienización; tappa -> stage / etapa; verifica finale -> final test / prueba final; reparto -> ward / servicio; operatore -> operator / operador; cinturino -> strap / correa.
 - Short UI labels (buttons, menu items) must stay short.
 - The "key" only gives context (where the text appears); do not translate it.
 
