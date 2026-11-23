@@ -6,7 +6,7 @@ const API = 'https://api.anthropic.com/v1/messages';
 
 export const CLAUDE_KEY = process.env.ANTHROPIC_API_KEY;
 
-export async function claudeTool({ model, system, cached, messages, schema, name = 'risposta', description = 'Restituisci il risultato.', maxTokens = 1000, temperature = 0.2 }) {
+export async function claudeTool({ model, system, cached, messages, schema, name = 'risposta', description = 'Restituisci il risultato.', maxTokens = 1000 }) {
   const sys = [];
   // prima la parte fissa (in cache), poi le istruzioni che possono cambiare da utente a utente
   if (cached) sys.push({ type: 'text', text: cached, cache_control: { type: 'ephemeral' } });
@@ -15,7 +15,7 @@ export async function claudeTool({ model, system, cached, messages, schema, name
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model, max_tokens: maxTokens, temperature, system: sys, messages,
+      model, max_tokens: maxTokens, system: sys, messages,
       tools: [{ name, description, input_schema: schema }],
       tool_choice: { type: 'tool', name },
     }),
