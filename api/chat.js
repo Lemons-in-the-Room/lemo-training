@@ -110,7 +110,7 @@ export default async function handler(req, res) {
     : [];
   const answered = out.answered !== false;
 
-  await db.from('chat_logs').insert({ user_id: userId, lang, question: q, answer, sources, answered });
+  const { data: logRow } = await db.from('chat_logs').insert({ user_id: userId, lang, question: q, answer, sources, answered }).select('id').single();
 
-  return res.status(200).json({ answer, sources, answered });
+  return res.status(200).json({ answer, sources, answered, id: logRow?.id ?? null });
 }

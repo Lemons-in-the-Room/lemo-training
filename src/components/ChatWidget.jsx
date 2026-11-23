@@ -14,6 +14,16 @@ const TXT = {
 // eslint-disable-next-line react-refresh/only-export-components
 export const openChat = () => window.dispatchEvent(new Event('lemo:open-chat'));
 
+// testo del chatbot: **grassetto** e a capo, senza HTML
+const Rich = ({ text }) => String(text || '').split('\n').map((line, i, arr) => (
+  <span key={i}>
+    {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => (/^\*\*[^*]+\*\*$/.test(part) ? <b key={j}>{part.slice(2, -2)}</b> : part))}
+    {i < arr.length - 1 && <br />}
+  </span>
+));
+
+const TEAM_DOMAIN = '@lemonsintheroom.com';
+
 const ChatWidget = () => {
   const { lang, u } = useLang();
   const tx = TXT[lang] || TXT.en;
@@ -61,6 +71,21 @@ const ChatWidget = () => {
   }, []);
   const dismissNudge = () => { setNudge(false); sessionStorage.setItem('lemo_nudge', '1'); };
 
+  // Account del team (@lemonsintheroom.com): sotto ogni risposta "Giusta" / "Correggi" per allenare il chatbot
+  const [team, setTeam] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => { if (alive) setTeam(String(data?.session?.user?.email || '').toLowerCase().endsWith(TEAM_DOMAIN)); });
+    return () => { alive = false; };
+  }, []);
+  const setMsg = (k, patch) => setMessages((all) => all.map((x, i) => (i === k ? { ...x, ...patch } : x)));
+  const sendFeedback = async (k, verdict, correction = null) => {
+    const m = messages[k];
+    setMsg(k, { fb: 'sending' });
+    const { error } = await supabase.from('chat_feedback').insert({ chat_log_id: m.id || null, question: m.question || '', bot_answer: m.text, verdict, correction });
+    setMsg(k, { fb: error ? 'error' : verdict === 'ok' ? 'ok' : 'sent' });
+  };
+
   const send = async (e) => {
     e?.preventDefault();
     const question = input.trim();
@@ -80,7 +105,7 @@ const ChatWidget = () => {
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || tx.error);
-      setMessages((m) => [...m, { role: 'assistant', text: j.answer, sources: j.sources || [], answered: j.answered }]);
+      setMessages((m) => [...m, { role: 'assistant', text: j.answer, sources: j.sources || [], answered: j.answered, id: j.id, question }]);
     } catch (err) {
       setMessages((m) => [...m, { role: 'assistant', text: err.message || tx.error, error: true, answered: false }]);
     } finally {
@@ -112,10 +137,31 @@ const ChatWidget = () => {
             <p className="msg bot">{tx.hello}</p>
             {messages.map((m, k) => (
               <div key={k} className={`msg ${m.role === 'user' ? 'me' : 'bot'} ${m.error ? 'err' : ''}`}>
-                <p>{m.text}</p>
+                <p><Rich text={m.text} /></p>
                 {m.role === 'assistant' && m.sources?.length > 0 && <small>{tx.sources}: {m.sources.join(' · ')}</small>}
                 {m.role === 'assistant' && m.answered === false && (
                   <button type="button" className="msg-ticket" onClick={() => { setOpen(false); navigate('/supporto#ticket'); }}><Ico n="help" /> {tx.ticket}</button>
+                )}
+                {team && m.role === 'assistant' && !m.error && (
+                  <div className="msg-fb">
+                    {!m.fb && <>
+                      <button type="button" onClick={() => sendFeedback(k, 'ok')}>👍 Giusta</button>
+                      <button type="button" onClick={() => setMsg(k, { fb: 'editing', draft: '' })}>✏️ Correggi</button>
+                    </>}
+                    {m.fb === 'editing' && (
+                      <form onSubmit={(e) => { e.preventDefault(); if (m.draft?.trim()) sendFeedback(k, 'wrong', m.draft.trim()); }}>
+                        <textarea autoFocus rows={3} value={m.draft || ''} onChange={(e) => setMsg(k, { draft: e.target.value })} placeholder="Cosa avresti risposto tu? Scrivi pure di getto." maxLength={3000} />
+                        <span>
+                          <button type="button" onClick={() => setMsg(k, { fb: null })}>Annulla</button>
+                          <button type="submit" className="on" disabled={!m.draft?.trim()}>Invia correzione</button>
+                        </span>
+                      </form>
+                    )}
+                    {m.fb === 'sending' && <em>Invio…</em>}
+                    {m.fb === 'ok' && <em>Grazie, segnata come giusta.</em>}
+                    {m.fb === 'sent' && <em>Grazie! Leonardo la trasforma in una scheda per il chatbot.</em>}
+                    {m.fb === 'error' && <em>Non sono riuscito a salvarla. Riprova.</em>}
+                  </div>
                 )}
               </div>
             ))}

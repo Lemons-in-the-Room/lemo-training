@@ -363,3 +363,14 @@
 .imm .cert-msg.err{border-left:3px solid #FF6B57}
 @media (max-width:760px){.imm .cert-msg{max-width:calc(100% - 76px);margin-right:76px;text-align:left}}
 .imm .cert-copy{margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+
+/* chatbot: allenamento da parte del team (solo account @lemonsintheroom.com) */
+.imm .msg-fb{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(127,127,127,.28);display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px}
+.imm .msg-fb>button,.imm .msg-fb span button{padding:5px 11px;border-radius:999px;border:1px solid rgba(127,127,127,.35);background:transparent;color:inherit;font-weight:700;font-size:12.5px;cursor:pointer}
+.imm .msg-fb>button:hover,.imm .msg-fb span button:hover{border-color:var(--accent);color:var(--accent)}
+.imm .msg-fb form{width:100%;display:flex;flex-direction:column;gap:8px}
+.imm .msg-fb textarea{width:100%;resize:vertical;border-radius:12px;padding:9px 11px;border:1px solid rgba(127,127,127,.35);background:rgba(255,255,255,.06);color:inherit;font:inherit;font-size:13.5px;line-height:1.45}
+.imm .msg-fb span{display:flex;gap:6px;justify-content:flex-end}
+.imm .msg-fb span button.on{background:var(--accent);border-color:transparent;color:#fff}
+.imm .msg-fb span button:disabled{opacity:.45;cursor:default}
+.imm .msg-fb em{font-style:normal;font-weight:600;opacity:.75}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BookMarked, Plus, Save, Trash2, X, MessageCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../utils/supabase';
+import TeamFeedback from './TeamFeedback';
 
 // Base di conoscenza del chatbot (scritta in italiano: il bot risponde in tutte le lingue)
 // + ultime domande fatte dagli operatori.
@@ -56,12 +57,14 @@ const KnowledgeSection = () => {
   const shownLogs = onlyUnanswered ? logs.filter(l => !l.answered) : logs;
 
   return (
+    <>
+    <TeamFeedback onPublished={load} />
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
       {/* Base di conoscenza */}
       <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-slate-800 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-black text-white flex items-center gap-2"><BookMarked className="w-6 h-6 text-[#FF8731]" /> Knowledge Base</h3>
+            <h3 className="text-2xl font-black text-white flex items-center gap-2"><BookMarked className="w-6 h-6 text-[#FF8731]" /> Schede del chatbot</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Scrivi in italiano: il chatbot la usa subito e risponde in tutte le lingue. {entries.length} voci.</p>
           </div>
           <button onClick={() => setForm({ ...empty })} className="px-4 py-2 bg-[#FF8731] hover:bg-[#FF9E54] text-white rounded-xl font-bold text-sm flex items-center gap-2 shrink-0"><Plus className="w-4 h-4" /> Nuova voce</button>
@@ -109,7 +112,7 @@ const KnowledgeSection = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden">
         <div className="p-8 border-b border-slate-800 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-black text-white flex items-center gap-2"><MessageCircle className="w-6 h-6 text-[#8756FA]" /> Chatbot Questions</h3>
+            <h3 className="text-2xl font-black text-white flex items-center gap-2"><MessageCircle className="w-6 h-6 text-[#8756FA]" /> Domande al chatbot</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">{logs.length} recenti · {logs.filter(l => !l.answered).length} senza risposta</p>
           </div>
           <button onClick={() => setOnlyUnanswered(v => !v)} className={`px-4 py-2 rounded-xl font-bold text-sm border shrink-0 ${onlyUnanswered ? 'bg-[#8756FA] text-white border-transparent' : 'bg-slate-800 text-slate-300 border-slate-700'}`}>Solo senza risposta</button>
@@ -133,6 +136,7 @@ const KnowledgeSection = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
