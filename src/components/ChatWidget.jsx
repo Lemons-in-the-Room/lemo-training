@@ -5,9 +5,9 @@ import { useLang } from '../LanguageContext';
 import { Ico } from '../imm/kit';
 
 const TXT = {
-  it: { title: 'Assistente Lemons', hello: "Ciao! Chiedimi qualsiasi cosa sull'uso dei visori o della piattaforma.", placeholder: 'Scrivi una domanda…', disclaimer: 'Non inserire dati dei pazienti. Per indicazioni cliniche rivolgiti al personale medico.', ticket: 'Apri un ticket', sources: 'Fonti', error: 'Qualcosa è andato storto. Riprova.', login: "Accedi per usare l'assistente.", send: 'Invia', open: 'Apri l\'assistente' },
-  en: { title: 'Lemons Assistant', hello: 'Hi! Ask me anything about using the headsets or the platform.', placeholder: 'Type a question…', disclaimer: 'Do not enter patient data. For clinical guidance, refer to medical staff.', ticket: 'Open a ticket', sources: 'Sources', error: 'Something went wrong. Please try again.', login: 'Log in to use the assistant.', send: 'Send', open: 'Open the assistant' },
-  es: { title: 'Asistente Lemons', hello: '¡Hola! Pregúntame lo que quieras sobre los visores o la plataforma.', placeholder: 'Escribe una pregunta…', disclaimer: 'No introduzcas datos de pacientes. Para indicaciones clínicas, consulta al personal médico.', ticket: 'Abrir un ticket', sources: 'Fuentes', error: 'Algo salió mal. Inténtalo de nuevo.', login: 'Inicia sesión para usar el asistente.', send: 'Enviar', open: 'Abrir el asistente' },
+  it: { title: 'Assistente Lemons', hello: "Ciao! Chiedimi qualsiasi cosa sull'uso dei visori o della piattaforma.", placeholder: 'Scrivi una domanda…', disclaimer: 'Non inserire dati dei pazienti. Per indicazioni cliniche rivolgiti al personale medico.', ticket: 'Apri un ticket', sources: 'Fonti', error: 'Qualcosa è andato storto. Riprova.', login: "Accedi per usare l'assistente.", send: 'Invia', open: 'Apri l\'assistente', fbOk: '👍 Giusta', fbFix: '✏️ Correggi', fbPh: 'Cosa avresti risposto tu? Scrivi pure di getto.', fbCancel: 'Annulla', fbSend: 'Invia correzione', fbSending: 'Invio…', fbThanksOk: 'Grazie, segnata come giusta.', fbThanks: 'Grazie! La trasformiamo in una scheda per il chatbot.', fbErr: 'Non sono riuscito a salvarla. Riprova.' },
+  en: { title: 'Lemons Assistant', hello: 'Hi! Ask me anything about using the headsets or the platform.', placeholder: 'Type a question…', disclaimer: 'Do not enter patient data. For clinical guidance, refer to medical staff.', ticket: 'Open a ticket', sources: 'Sources', error: 'Something went wrong. Please try again.', login: 'Log in to use the assistant.', send: 'Send', open: 'Open the assistant', fbOk: '👍 Correct', fbFix: '✏️ Fix', fbPh: 'What would you have answered? Just write it as it comes.', fbCancel: 'Cancel', fbSend: 'Send fix', fbSending: 'Sending…', fbThanksOk: 'Thanks, marked as correct.', fbThanks: 'Thanks! We will turn it into a chatbot card.', fbErr: 'Could not save it. Please try again.' },
+  es: { title: 'Asistente Lemons', hello: '¡Hola! Pregúntame lo que quieras sobre los visores o la plataforma.', placeholder: 'Escribe una pregunta…', disclaimer: 'No introduzcas datos de pacientes. Para indicaciones clínicas, consulta al personal médico.', ticket: 'Abrir un ticket', sources: 'Fuentes', error: 'Algo salió mal. Inténtalo de nuevo.', login: 'Inicia sesión para usar el asistente.', send: 'Enviar', open: 'Abrir el asistente', fbOk: '👍 Correcta', fbFix: '✏️ Corregir', fbPh: '¿Qué habrías respondido tú? Escríbelo tal cual.', fbCancel: 'Cancelar', fbSend: 'Enviar corrección', fbSending: 'Enviando…', fbThanksOk: 'Gracias, marcada como correcta.', fbThanks: '¡Gracias! La convertiremos en una ficha del chatbot.', fbErr: 'No se ha podido guardar. Inténtalo de nuevo.' },
 };
 
 // apertura dall'esterno (es. pulsante "Chiedi all'assistente" in Supporto)
@@ -145,22 +145,22 @@ const ChatWidget = () => {
                 {team && m.role === 'assistant' && !m.error && (
                   <div className="msg-fb">
                     {!m.fb && <>
-                      <button type="button" onClick={() => sendFeedback(k, 'ok')}>👍 Giusta</button>
-                      <button type="button" onClick={() => setMsg(k, { fb: 'editing', draft: '' })}>✏️ Correggi</button>
+                      <button type="button" onClick={() => sendFeedback(k, 'ok')}>{tx.fbOk}</button>
+                      <button type="button" onClick={() => setMsg(k, { fb: 'editing', draft: '' })}>{tx.fbFix}</button>
                     </>}
                     {m.fb === 'editing' && (
                       <form onSubmit={(e) => { e.preventDefault(); if (m.draft?.trim()) sendFeedback(k, 'wrong', m.draft.trim()); }}>
-                        <textarea autoFocus rows={3} value={m.draft || ''} onChange={(e) => setMsg(k, { draft: e.target.value })} placeholder="Cosa avresti risposto tu? Scrivi pure di getto." maxLength={3000} />
+                        <textarea autoFocus rows={3} value={m.draft || ''} onChange={(e) => setMsg(k, { draft: e.target.value })} placeholder={tx.fbPh} maxLength={3000} />
                         <span>
-                          <button type="button" onClick={() => setMsg(k, { fb: null })}>Annulla</button>
-                          <button type="submit" className="on" disabled={!m.draft?.trim()}>Invia correzione</button>
+                          <button type="button" onClick={() => setMsg(k, { fb: null })}>{tx.fbCancel}</button>
+                          <button type="submit" className="on" disabled={!m.draft?.trim()}>{tx.fbSend}</button>
                         </span>
                       </form>
                     )}
-                    {m.fb === 'sending' && <em>Invio…</em>}
-                    {m.fb === 'ok' && <em>Grazie, segnata come giusta.</em>}
-                    {m.fb === 'sent' && <em>Grazie! Leonardo la trasforma in una scheda per il chatbot.</em>}
-                    {m.fb === 'error' && <em>Non sono riuscito a salvarla. Riprova.</em>}
+                    {m.fb === 'sending' && <em>{tx.fbSending}</em>}
+                    {m.fb === 'ok' && <em>{tx.fbThanksOk}</em>}
+                    {m.fb === 'sent' && <em>{tx.fbThanks}</em>}
+                    {m.fb === 'error' && <em>{tx.fbErr}</em>}
                   </div>
                 )}
               </div>
