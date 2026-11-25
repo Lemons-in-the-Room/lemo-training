@@ -71,6 +71,13 @@ export const ui = {
       urgent: 'Urgenze · Supporto tecnico',
     },
     chat: { nudgeTitle: 'Hai un dubbio?', nudgeText: 'Scrivimi qui: rispondo subito su visori, moduli e piattaforma, anche in inglese e spagnolo.', close: 'Chiudi' },
+    reset: {
+      title: 'Scegli la nuova password', lead: "Scrivila due volte. Poi entri direttamente nella piattaforma.",
+      password: 'Nuova password', confirm: 'Ripeti la password', hint: 'Almeno 6 caratteri', save: 'Salva e entra',
+      errShort: 'La password deve avere almeno 6 caratteri.', errMatch: 'Le due password non coincidono.', errSame: 'La nuova password deve essere diversa da quella vecchia.', errGeneric: 'Non sono riuscito a salvare la password. Riprova.',
+      ok: 'Password aggiornata! Ti porto dentro…', checking: 'Un attimo…',
+      invalidTitle: 'Link non valido o scaduto', invalidText: 'Il link per reimpostare la password vale una sola volta e scade dopo un po\'. Chiedine uno nuovo dalla pagina di accesso.', back: "Torna all'accesso",
+    },
     access: {
       login: 'Accedi', register: 'Registrati', password: 'Password', forgot: 'Password dimenticata?',
       loginBtn: 'Accedi', next: 'Avanti', back: 'Indietro', create: 'Crea account',
@@ -150,6 +157,13 @@ export const ui = {
       urgent: 'Emergencies · Technical support',
     },
     chat: { nudgeTitle: 'Got a question?', nudgeText: 'Write to me here: I answer right away about headsets, modules and the platform.', close: 'Close' },
+    reset: {
+      title: 'Choose a new password', lead: 'Type it twice. Then you go straight into the platform.',
+      password: 'New password', confirm: 'Repeat the password', hint: 'At least 6 characters', save: 'Save and continue',
+      errShort: 'The password must be at least 6 characters long.', errMatch: 'The two passwords do not match.', errSame: 'The new password must be different from the old one.', errGeneric: 'Could not save the password. Please try again.',
+      ok: 'Password updated! Taking you in…', checking: 'One moment…',
+      invalidTitle: 'Invalid or expired link', invalidText: 'The password reset link works only once and expires after a while. Request a new one from the login page.', back: 'Back to login',
+    },
     access: {
       login: 'Log in', register: 'Sign up', password: 'Password', forgot: 'Forgot your password?',
       loginBtn: 'Log in', next: 'Next', back: 'Back', create: 'Create account',
@@ -229,6 +243,13 @@ export const ui = {
       urgent: 'Urgencias · Soporte técnico',
     },
     chat: { nudgeTitle: '¿Tienes una duda?', nudgeText: 'Escríbeme aquí: respondo al momento sobre visores, módulos y plataforma.', close: 'Cerrar' },
+    reset: {
+      title: 'Elige una nueva contraseña', lead: 'Escríbela dos veces. Después entras directamente en la plataforma.',
+      password: 'Nueva contraseña', confirm: 'Repite la contraseña', hint: 'Al menos 6 caracteres', save: 'Guardar y entrar',
+      errShort: 'La contraseña debe tener al menos 6 caracteres.', errMatch: 'Las dos contraseñas no coinciden.', errSame: 'La nueva contraseña debe ser distinta de la anterior.', errGeneric: 'No se ha podido guardar la contraseña. Inténtalo de nuevo.',
+      ok: '¡Contraseña actualizada! Te llevo dentro…', checking: 'Un momento…',
+      invalidTitle: 'Enlace no válido o caducado', invalidText: 'El enlace para restablecer la contraseña solo funciona una vez y caduca al cabo de un tiempo. Pide uno nuevo desde la página de acceso.', back: 'Volver al acceso',
+    },
     access: {
       login: 'Entrar', register: 'Registrarse', password: 'Contraseña', forgot: '¿Has olvidado la contraseña?',
       loginBtn: 'Entrar', next: 'Siguiente', back: 'Atrás', create: 'Crear cuenta',

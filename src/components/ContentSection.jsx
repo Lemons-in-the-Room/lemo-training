@@ -14,7 +14,7 @@ const LANGS = [['it', 'Italiano'], ['en', 'English'], ['es', 'Español']];
 const UI_SECTIONS = {
   nav: 'Menu', logout: 'Menu', cue: 'Frecce e pulsanti', home: 'Home', journey: 'Formazione', lesson: 'Lezione',
   quiz: 'Verifica finale', support: 'Supporto', access: 'Accesso e registrazione', onb: 'Primo accesso', chat: 'Chatbot',
-  net: 'Avvisi di connessione', cert: 'Certificato', notFound: 'Pagina non trovata',
+  net: 'Avvisi di connessione', cert: 'Certificato', reset: 'Nuova password', notFound: 'Pagina non trovata',
 };
 const LANG_SECTIONS = { welcome: 'Accesso e registrazione', home: 'Home e certificato', support: 'Supporto' };
 const SKIP_LEAF = new Set(['duration', 'dateLocale', 'tag', 'icon', 'id', 'correct']);

@@ -12,6 +12,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const Admin      = lazy(() => import('./Admin'));
 const NotFound   = lazy(() => import('./pages/NotFound'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
 // Titolo nella scheda del browser: Formazione -> Training, Supporto -> Support, il resto -> Training & Support
 const BRAND = 'Lemons in the room';
@@ -38,6 +39,7 @@ function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Access />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin" element={<Admin />} />
             <Route element={<Layout />}>
               <Route path="/benvenuto" element={<Onboarding />} />

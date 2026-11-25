@@ -374,3 +374,7 @@
 .imm .msg-fb span button.on{background:var(--accent);border-color:transparent;color:#fff}
 .imm .msg-fb span button:disabled{opacity:.45;cursor:default}
 .imm .msg-fb em{font-style:normal;font-weight:600;opacity:.75}
+
+/* pagina "Scegli la nuova password" */
+.imm .reset-h{margin:0;font-family:var(--display, inherit);font-size:26px;line-height:1.2}
+.imm .reset-p{margin:0 0 6px;opacity:.75;line-height:1.5}

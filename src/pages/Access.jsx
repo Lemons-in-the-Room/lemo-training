@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '../LanguageContext';
-import { supabase } from '../utils/supabase';
+import { authRedirect, supabase } from '../utils/supabase';
 import { fmt } from '../i18n/ui';
 import { Ico, IMG, World } from '../imm/kit';
 import { LangMenu } from '../Layout';
@@ -98,7 +98,9 @@ export default function Access() {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => { if (alive && data?.session) navigate('/home', { replace: true }); });
+    // arrivati dal link "password dimenticata" (o con un link scaduto): si va a scegliere la nuova password
+    if (sessionStorage.getItem('lemo_recovery') || sessionStorage.getItem('lemo_auth_error') === 'otp_expired') navigate('/reset-password', { replace: true });
+    else supabase.auth.getSession().then(({ data }) => { if (alive && data?.session) navigate('/home', { replace: true }); });
     supabase.from('catalog_options').select('kind,name,sort').eq('approved', true).order('sort').order('name').then(({ data }) => {
       if (!alive || !data) return;
       setLists({ hospital: data.filter((r) => r.kind === 'hospital').map((r) => r.name), department: data.filter((r) => r.kind === 'department').map((r) => r.name) });
@@ -132,7 +134,7 @@ export default function Access() {
     setLoading(true); setMsg({ text: '' });
     const { data, error } = await supabase.auth.signUp({
       email: f.email.trim(), password: f.password,
-      options: { data: { first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: hosp.v.trim(), department: dep.v.trim(), hospital_custom: hosp.typed, department_custom: dep.typed, patient_type: f.patientType } },
+      options: { emailRedirectTo: authRedirect('/'), data: { first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: hosp.v.trim(), department: dep.v.trim(), hospital_custom: hosp.typed, department_custom: dep.typed, patient_type: f.patientType } },
     });
     if (error) { setMsg({ text: /already/i.test(error.message) ? A.errExists : A.errRegister }); setLoading(false); return; }
     if (!data?.session) { setMsg({ text: A.confirmMail, ok: true }); setLoading(false); return; }
@@ -154,7 +156,7 @@ export default function Access() {
   const forgot = async () => {
     if (!f.email.trim()) { setMsg({ text: A.needEmail }); return; }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(f.email.trim());
+    const { error } = await supabase.auth.resetPasswordForEmail(f.email.trim(), { redirectTo: authRedirect('/reset-password') });
     setMsg(error ? { text: A.resetErr } : { text: A.resetSent, ok: true });
     setLoading(false);
   };
