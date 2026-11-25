@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import it from './i18n/lang-it';
 import { ui } from './i18n/ui';
 import { applyOverrides, fetchOverrides, readCachedOverrides } from './i18n/overrides';
+import { supabase } from './utils/supabase';
 
 // L'italiano è sempre incluso; inglese e spagnolo si scaricano solo se qualcuno li sceglie.
 const LOADERS = { en: () => import('./i18n/lang-en'), es: () => import('./i18n/lang-es') };
@@ -33,6 +34,18 @@ export const LanguageProvider = ({ children }) => {
     let alive = true;
     LOADERS[lang]().then((m) => { cache[lang] = m.default; if (alive) setLoaded((n) => n + 1); });
     return () => { alive = false; };
+  }, [lang]);
+
+  // La lingua finisce anche nel profilo dell'utente (user_metadata.lang): le mail di Supabase
+  // (conferma, recupero password, cambio email) la usano per scegliere IT / EN / ES.
+  useEffect(() => {
+    const sync = (session) => {
+      if (!session || sessionStorage.getItem('lemo_recovery')) return;
+      if (session.user?.user_metadata?.lang !== lang) supabase.auth.updateUser({ data: { lang } }).catch(() => {});
+    };
+    supabase.auth.getSession().then(({ data }) => sync(data?.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => { if (event === 'SIGNED_IN') sync(session); });
+    return () => sub?.subscription?.unsubscribe();
   }, [lang]);
 
   const switchLang = (code) => {

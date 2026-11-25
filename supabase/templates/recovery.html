@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<body style="margin:0;padding:0;background:#F3F1FA">
+{{ $lang := printf "%v" .Data.lang }}{{ if eq $lang "en" }}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1FA;padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:20px;overflow:hidden">
+  <tr><td style="background:#03091B;padding:24px 28px"><img src="{{ .SiteURL }}/images/logos/logo%20esteso%20bianco%20png.png" alt="Lemons in the room" width="150" style="display:block;border:0"></td></tr>
+  <tr><td style="padding:28px">
+    <h1 style="margin:0 0 14px;font:700 22px/1.3 Arial,Helvetica,sans-serif;color:#151233">Reset your password</h1>
+    <p style="margin:0 0 22px;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">Hi{{ with .Data.first_name }} {{ . }}{{ end }}, we received a request to reset the password for your account. Tap the button to choose a new one.</p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 22px;border-radius:12px;background:#FF8731;font:700 15px Arial,Helvetica,sans-serif;color:#FFFFFF;text-decoration:none">Choose a new password</a>
+    <p style="margin:24px 0 0;font:400 13px/1.55 Arial,Helvetica,sans-serif;color:#8A86A0">The link works only once and for a limited time. If you didn't request it, ignore this email: your password stays the same.</p>
+  </td></tr>
+  <tr><td style="padding:16px 28px;border-top:1px solid #EEEAF7;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0"><a href="{{ .SiteURL }}" style="color:#8A86A0;text-decoration:none">Lemons in the room · Training & Support</a></td></tr>
+</table></td></tr></table>{{ else if eq $lang "es" }}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1FA;padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:20px;overflow:hidden">
+  <tr><td style="background:#03091B;padding:24px 28px"><img src="{{ .SiteURL }}/images/logos/logo%20esteso%20bianco%20png.png" alt="Lemons in the room" width="150" style="display:block;border:0"></td></tr>
+  <tr><td style="padding:28px">
+    <h1 style="margin:0 0 14px;font:700 22px/1.3 Arial,Helvetica,sans-serif;color:#151233">Restablece tu contraseña</h1>
+    <p style="margin:0 0 22px;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">Hola{{ with .Data.first_name }} {{ . }}{{ end }}, hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Pulsa el botón y elige una nueva.</p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 22px;border-radius:12px;background:#FF8731;font:700 15px Arial,Helvetica,sans-serif;color:#FFFFFF;text-decoration:none">Elegir nueva contraseña</a>
+    <p style="margin:24px 0 0;font:400 13px/1.55 Arial,Helvetica,sans-serif;color:#8A86A0">El enlace solo funciona una vez y durante un tiempo limitado. Si no lo has pedido tú, ignora este correo: tu contraseña no cambia.</p>
+  </td></tr>
+  <tr><td style="padding:16px 28px;border-top:1px solid #EEEAF7;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0"><a href="{{ .SiteURL }}" style="color:#8A86A0;text-decoration:none">Lemons in the room · Training & Support</a></td></tr>
+</table></td></tr></table>{{ else }}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1FA;padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:20px;overflow:hidden">
+  <tr><td style="background:#03091B;padding:24px 28px"><img src="{{ .SiteURL }}/images/logos/logo%20esteso%20bianco%20png.png" alt="Lemons in the room" width="150" style="display:block;border:0"></td></tr>
+  <tr><td style="padding:28px">
+    <h1 style="margin:0 0 14px;font:700 22px/1.3 Arial,Helvetica,sans-serif;color:#151233">Reimposta la password</h1>
+    <p style="margin:0 0 22px;font:400 15px/1.6 Arial,Helvetica,sans-serif;color:#3B3753">Ciao{{ with .Data.first_name }} {{ . }}{{ end }}, abbiamo ricevuto una richiesta per reimpostare la password del tuo account. Tocca il pulsante e scegline una nuova.</p>
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 22px;border-radius:12px;background:#FF8731;font:700 15px Arial,Helvetica,sans-serif;color:#FFFFFF;text-decoration:none">Scegli la nuova password</a>
+    <p style="margin:24px 0 0;font:400 13px/1.55 Arial,Helvetica,sans-serif;color:#8A86A0">Il link vale una sola volta e per un tempo limitato. Se non l'hai chiesto tu, ignora questa mail: la tua password resta la stessa.</p>
+  </td></tr>
+  <tr><td style="padding:16px 28px;border-top:1px solid #EEEAF7;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#8A86A0"><a href="{{ .SiteURL }}" style="color:#8A86A0;text-decoration:none">Lemons in the room · Training & Support</a></td></tr>
+</table></td></tr></table>{{ end }}
+</body></html>

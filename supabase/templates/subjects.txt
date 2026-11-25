@@ -1,0 +1,8 @@
+## confirmation
+{{ $lang := printf "%v" .Data.lang }}{{ if eq $lang "en" }}Confirm your email · Lemons in the room{{ else if eq $lang "es" }}Confirma tu email · Lemons in the room{{ else }}Conferma la tua email · Lemons in the room{{ end }}
+
+## recovery
+{{ $lang := printf "%v" .Data.lang }}{{ if eq $lang "en" }}Reset your password · Lemons in the room{{ else if eq $lang "es" }}Restablece tu contraseña · Lemons in the room{{ else }}Reimposta la password · Lemons in the room{{ end }}
+
+## email_change
+{{ $lang := printf "%v" .Data.lang }}{{ if eq $lang "en" }}Confirm your new email address · Lemons in the room{{ else if eq $lang "es" }}Confirma tu nueva dirección de email · Lemons in the room{{ else }}Conferma il nuovo indirizzo email · Lemons in the room{{ end }}

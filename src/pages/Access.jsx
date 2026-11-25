@@ -134,7 +134,7 @@ export default function Access() {
     setLoading(true); setMsg({ text: '' });
     const { data, error } = await supabase.auth.signUp({
       email: f.email.trim(), password: f.password,
-      options: { emailRedirectTo: authRedirect('/'), data: { first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: hosp.v.trim(), department: dep.v.trim(), hospital_custom: hosp.typed, department_custom: dep.typed, patient_type: f.patientType } },
+      options: { emailRedirectTo: authRedirect('/'), data: { lang, first_name: f.firstName.trim(), last_name: f.lastName.trim(), phone: f.phone.trim(), hospital: hosp.v.trim(), department: dep.v.trim(), hospital_custom: hosp.typed, department_custom: dep.typed, patient_type: f.patientType } },
     });
     if (error) { setMsg({ text: /already/i.test(error.message) ? A.errExists : A.errRegister }); setLoading(false); return; }
     if (!data?.session) { setMsg({ text: A.confirmMail, ok: true }); setLoading(false); return; }
