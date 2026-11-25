@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { useEffect, Suspense, lazy } from 'react';
 import Layout from './Layout';
 import { LanguageProvider } from './LanguageContext';
+// caricata subito (è piccola): ci si arriva con un reindirizzamento appena aperto il link della mail,
+// e una pagina "lazy" in quel momento può restare bloccata sulla schermata precedente
+import ResetPassword from './pages/ResetPassword';
 
 const Access     = lazy(() => import('./pages/Access'));
 const HomePage   = lazy(() => import('./pages/HomePage'));
@@ -12,7 +15,10 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const Admin      = lazy(() => import('./Admin'));
 const NotFound   = lazy(() => import('./pages/NotFound'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+
+// arrivati dal link di recupero (o con un link scaduto) sulla pagina di accesso: dritti a "Scegli la nuova password"
+const toReset = () => !!(sessionStorage.getItem('lemo_recovery') || sessionStorage.getItem('lemo_auth_error') === 'otp_expired');
+function Root() { return toReset() ? <Navigate to="/reset-password" replace /> : <Access />; }
 
 // Titolo nella scheda del browser: Formazione -> Training, Supporto -> Support, il resto -> Training & Support
 const BRAND = 'Lemons in the room';
@@ -38,7 +44,7 @@ function App() {
         <PageTitle />
         <Suspense fallback={null}>
           <Routes>
-            <Route path="/" element={<Access />} />
+            <Route path="/" element={<Root />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin" element={<Admin />} />
             <Route element={<Layout />}>
