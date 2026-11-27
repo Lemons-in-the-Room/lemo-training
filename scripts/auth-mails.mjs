@@ -60,7 +60,7 @@ writeFileSync('supabase/templates/subjects.txt', subjects.join('\n'));
 const fill = (html) => html
   .replace(/\{\{ with \.Data\.first_name \}\} \{\{ \. \}\}\{\{ end \}\}/g, ' Giulia')
   .replace(/\{\{ \.ConfirmationURL \}\}/g, '#')
-  .replace(/\{\{ \.SiteURL \}\}/g, 'https://lemons-training.vercel.app')
+  .replace(/\{\{ \.SiteURL \}\}/g, 'https://training.lemonsintheroom.com')
   .replace(/\{\{ \.Email \}\}/g, 'giulia@ospedale.it').replace(/\{\{ \.NewEmail \}\}/g, 'giulia.rossi@ospedale.it');
 let prev = '<!doctype html><html><head><meta charset="utf-8"><title>Anteprima mail Supabase</title></head><body style="margin:0;background:#ddd;font-family:Arial">';
 for (const type of Object.keys(T)) for (const lang of ['it', 'en', 'es']) {

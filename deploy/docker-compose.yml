@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: lemo-training-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "8110"
+      SITE_URL: https://training.lemonsintheroom.com
+    ports:
+      - "127.0.0.1:8110:8110"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m

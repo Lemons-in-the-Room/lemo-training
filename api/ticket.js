@@ -18,7 +18,7 @@ const SMTP_PASS = process.env.SMTP_PASS;
 const TICKET_TO = (process.env.TICKET_TO || 'leonardo@lemonsintheroom.com,emma@lemonsintheroom.com')
   .split(',').map(x => x.trim()).filter(Boolean);
 
-const SITE = 'https://lemons-training.vercel.app';
+const SITE = process.env.SITE_URL || 'https://training.lemonsintheroom.com';
 const LOGO = `${SITE}/images/logos/logo%20esteso%20bianco%20png.png`;
 const SLA_HOURS = 72;
 
