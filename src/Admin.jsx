@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, Award, ClipboardCheck, Tablet, PlayCircle, Search, Download, RefreshCw, ChevronDown, ChevronUp,
   ChevronLeft, ChevronRight, X, AlertTriangle, RotateCcw, Unlock, Trash2, ShieldCheck, ShieldOff, ArrowUpDown,
-  Building2, Baby, UserRound, LayoutDashboard, MessageCircle, Mail, LogOut, ExternalLink, Check, Eye, EyeOff, Languages,
+  Building2, Baby, UserRound, LayoutDashboard, MessageCircle, Mail, LogOut, ExternalLink, Check, Eye, EyeOff, Languages, UserCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -13,6 +13,7 @@ import { getLessons, profileOf } from './course';
 import KnowledgeSection from './components/KnowledgeSection';
 import ContentSection from './components/ContentSection';
 import CatalogSection from './components/CatalogSection';
+import ReviewSection from './components/ReviewSection';
 import './styles/admin.css';
 
 const PER_PAGE = 20;
@@ -577,6 +578,7 @@ const EmailTab = ({ users }) => {
 /* ---------------- PAGINA ---------------- */
 const TABS = [
   ['panoramica', 'Panoramica', LayoutDashboard],
+  ['revisione', 'Da revisionare', UserCheck],
   ['operatori', 'Operatori', Users],
   ['ospedali', 'Ospedali', Building2],
   ['contenuti', 'Contenuti', Languages],
@@ -615,7 +617,7 @@ const Admin = () => {
         done, doneCount: done.length, total: lessons.length || 1, nextIdx: lessons.findIndex((l) => !done.includes(l.id)),
         pct: lessons.length ? Math.round((done.length / lessons.length) * 100) + (u.final_quiz_passed_at ? 1 : 0) : -1,
         newsletterOptIn: u.newsletter_opt_in, quizPassedAt: u.final_quiz_passed_at, quizBest: u.final_quiz_best_score,
-        usesTablet: !!u.uses_tablet, priorOnboarding: u.prior_onboarding,
+        usesTablet: !!u.uses_tablet, priorOnboarding: u.prior_onboarding, reviewedAt: u.reviewed_at,
       };
       x.internal = isInternal(x);
       x.status = statusOf(x);
@@ -647,6 +649,7 @@ const Admin = () => {
 
   const users = useMemo(() => all.filter((u) => showInternal || !u.internal), [all, showInternal]);
   const internalCount = all.filter((u) => u.internal).length;
+  const toReview = users.filter((u) => !u.reviewedAt).length;
 
   const ask = (title, message, run, danger = true) => setModal({
     open: true, title, message, danger,
@@ -713,6 +716,7 @@ const Admin = () => {
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={tab === k ? 'on' : ''}>
               {tab === k && <motion.span layoutId="admTab" className="adm-tab-bg" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
               <I className="w-4 h-4" /> <span>{l}</span>
+              {k === 'revisione' && toReview > 0 && <b className="adm-count">{toReview}</b>}
             </button>
           ))}
         </nav>
@@ -722,6 +726,7 @@ const Admin = () => {
             {tab === 'panoramica' && <Overview users={users} onPick={(s) => goOperators(s)} />}
             {tab === 'operatori' && <Operators users={users} actions={actions} status={opStatus} setStatus={setOpStatus} hosp={opHosp} setHosp={setOpHosp} />}
             {tab === 'ospedali' && <Hospitals users={users} onOpenHospital={(h) => goOperators('all', h)} />}
+            {tab === 'revisione' && <ReviewSection users={users} onChanged={load} onRemove={actions.remove} />}
             {tab === 'contenuti' && <ContentSection />}
             {tab === 'chatbot' && <KnowledgeSection />}
             {tab === 'email' && <EmailTab users={users} />}
